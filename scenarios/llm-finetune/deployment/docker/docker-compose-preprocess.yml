@@ -1,0 +1,19 @@
+services:
+  medqa:
+    image: ${CONTAINER_REGISTRY:+$CONTAINER_REGISTRY/}preprocess-medqa:latest
+    volumes:
+      # - $ICMR_INPUT_PATH:/mnt/depa_ccr_poc/data
+      - $MEDQA_OUTPUT_PATH:/mnt/output/medqa
+    command: ["python3", "load_medqa_dataset.py"]
+  chatdoctor:
+    image: ${CONTAINER_REGISTRY:+$CONTAINER_REGISTRY/}preprocess-chatdoctor:latest
+    volumes:
+      # - $INDEX_INPUT_PATH:/mnt/depa_ccr_poc/data
+      - $CHATDOCTOR_OUTPUT_PATH:/mnt/output/chatdoctor
+    command: ["python3", "load_chatdoctor_dataset.py"]
+  medquad:
+    image: ${CONTAINER_REGISTRY:+$CONTAINER_REGISTRY/}preprocess-medquad:latest
+    volumes:
+      # - $COWIN_INPUT_PATH:/mnt/depa_ccr_poc/data
+      - $MEDQUAD_OUTPUT_PATH:/mnt/output/medquad
+    command: ["python3", "load_medquad_dataset.py"]

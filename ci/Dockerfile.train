@@ -1,21 +1,39 @@
+# FROM ubuntu:20.04
+
+# ENV DEBIAN_FRONTEND="noninteractive"
+
+# RUN apt-get update && apt-get -y upgrade \
+#     && apt-get install -y curl \
+#     && apt-get install -y python3.9 python3.9-dev python3.9-distutils \
+#     && apt-get install -y openjdk-8-jdk
+
+# ## Install pip
+# RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+# RUN python3.9 get-pip.py
+
+# ## Install dependencies
+# RUN pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+# RUN pip3 --default-timeout=1000 install pyspark pandas opacus onnx onnx2pytorch scikit-learn scipy matplotlib 
+
+# RUN apt-get install -y jq
+
+# # Install contract ledger client
+# COPY train/dist/pytrain-0.0.1-py3-none-any.whl .
+# RUN pip3 install pytrain-0.0.1-py3-none-any.whl
+
+# # Install script to run training 
+# COPY train/run.sh run.sh
+
+
 FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND="noninteractive"
 
-RUN apt-get update && apt-get -y upgrade \
-    && apt-get install -y curl \
-    && apt-get install -y python3.9 python3.9-dev python3.9-distutils \
-    && apt-get install -y openjdk-8-jdk
-
-## Install pip
-RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-RUN python3.9 get-pip.py
+RUN apt-get upgrade && apt-get update \
+    && apt-get install -y python3 python3-pip
 
 ## Install dependencies
-RUN pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-RUN pip3 --default-timeout=1000 install pyspark pandas opacus onnx onnx2pytorch scikit-learn scipy matplotlib 
-
-RUN apt-get install -y jq
+RUN pip3 install transformers datasets torch peft opacus pandas
 
 # Install contract ledger client
 COPY train/dist/pytrain-0.0.1-py3-none-any.whl .

@@ -5,6 +5,9 @@ from .join import Join
 from .private_train import PrivateTrain
 from .train import Train
 
+from .text_join import TextJoin
+from .private_llm_finetune import PrivateLLMFineTune
+
 class PipelineExecutor:
     def __init__(self):
         self.steps = []
