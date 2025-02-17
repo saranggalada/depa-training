@@ -13,7 +13,10 @@ RUN python3.9 get-pip.py
 
 ## Install dependencies
 RUN pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-RUN pip3 --default-timeout=1000 install pyspark pandas opacus onnx onnx2pytorch scikit-learn scipy matplotlib 
+RUN pip3 --default-timeout=1000 install pyspark pandas opacus onnx onnx2pytorch scikit-learn scipy matplotlib
+
+# Line added for LLM finetuning support
+RUN pip3 install transformers datasets peft
 
 RUN apt-get install -y jq
 
