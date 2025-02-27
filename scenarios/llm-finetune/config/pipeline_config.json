@@ -38,8 +38,8 @@
       {
         "name": "PrivateLLMFineTune",
         "config": {
-          "device": "cpu",
-          "saved_model_dir": "/mnt/model/",
+          "device": "cuda",
+          "saved_model_dir": "/mnt/remote/model",
           "model_name": "facebook/opt-350m",
           "trained_model_output_path": "/mnt/remote/output/model.pth",
           "input_dataset_path": "/tmp/medqa_chatdoctor_medquad_joined.csv",
@@ -47,19 +47,19 @@
           "HF_WRITE_TOKEN": "",
           "SAVE_MODEL_REPO_NAME": "Sarang-Galada/medqa-dp-llm-finetune-test_16Feb25",
           "MAX_TOKENS": 512,
-          "BATCH_SIZE": 4,
+          "BATCH_SIZE": 8,
           "NUM_EPOCHS": 1,
           "Q_PRECISION": "load_in_4bit",
           "LEARNING_RATE": 5e-5,
           "EPSILON": 7.5,
           "DELTA": 1e-5,
           "MAX_GRAD_NORM": 1.0,
-          "MAX_PHYSICAL_BATCH_SIZE": 4,
+          "MAX_PHYSICAL_BATCH_SIZE": 8,
           "LORA_RANK": 8,
           "LORA_ALPHA": 32,
           "LORA_TARGET_MODULES": null,
           "LORA_DROPOUT": 0.05,
-          "LORA_BIAS": null,
+          "LORA_BIAS": "none",
           "LOG_FREQ_STEPS": 50
         }
       }

@@ -1,4 +1,4 @@
-from transformers import AutoConfig, AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+from transformers import AutoConfig, AutoTokenizer, AutoModelForCausalLM#, BitsAndBytesConfig
 from peft import prepare_model_for_kbit_training
 import torch
 # import os
@@ -9,13 +9,14 @@ from huggingface_hub import login
 
 # Class for handling language model loading and saving
 class ModelHandler:
-    def __init__(self, model_name, hf_token, q_prec, save_dir="saved_models"):
+    def __init__(self, model_name, hf_token, q_prec, save_dir="saved_models", device = 'cuda'):
         self.model_name = model_name
         self.save_dir = Path(save_dir)
         self.save_dir.mkdir(parents=True, exist_ok=True)
         self.hf_token = hf_token
         login(hf_token)
         self.q_prec = q_prec
+        self.device = device
         
     def load_from_huggingface(self):
         """Load model and tokenizer from HuggingFace"""
@@ -23,19 +24,16 @@ class ModelHandler:
         self.config = AutoConfig.from_pretrained(self.model_name)
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
 
-
-        ### TO DO
         # Create a quantization configuration for 4-bit precision
         q_params = "{'" + self.q_prec + "': True}"
         quantization_config = BitsAndBytesConfig(**literal_eval(q_params))
         
-        # Load pretrained model based on configurations. Force CPU device
-        device = torch.device('cpu')
+        # Load pretrained model based on configurations.
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             config=self.config,
             quantization_config=quantization_config,
-            device_map={"": device}
+            device_map={"": torch.device(self.device)}
         )
         
         # Prepare model for low-bit training
@@ -117,11 +115,11 @@ class ModelHandler:
 
 # MODEL_NAME = "meta-llama/Llama-3.2-1b"
 MODEL_NAME = "facebook/opt-350m"
-SAVE_DIR = "/mnt/model"
+SAVE_DIR = '/mnt/model'
 Q_PREC = "load_in_4bit"
 HF_READ_TOKEN = ""
 
-handler = ModelHandler(model_name=MODEL_NAME, save_dir=SAVE_DIR, hf_token=HF_READ_TOKEN, q_prec=Q_PREC)
+handler = ModelHandler(model_name=MODEL_NAME, save_dir=SAVE_DIR, hf_token=HF_READ_TOKEN, q_prec=Q_PREC, device='cuda')
 
 # Load from HuggingFace
 model, tokenizer = handler.load_from_huggingface()
