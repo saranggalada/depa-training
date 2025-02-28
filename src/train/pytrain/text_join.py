@@ -24,6 +24,7 @@ class TextJoin(TaskBase):
 
         path = config["joined_dataset"]["output_folder"]+config["joined_dataset"]["output_file"]
         joined.to_csv(path, index=False)
+        print(f"Saved joined dataset: {path}")
         
     def execute(self, config):
         self.load_and_join(config)

@@ -27,6 +27,7 @@ from torch.utils.data import DataLoader, Dataset
 from torch.nn import CrossEntropyLoss
 # For loading readymade models and datasets
 from datasets import load_dataset
+from datasets import Dataset as ds
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig, get_scheduler
 # For parameter-efficient training
 import peft
@@ -38,7 +39,7 @@ from opacus.utils.batch_memory_manager import BatchMemoryManager  # For large ba
 # For monitoring training progress
 from tqdm import tqdm
 # For accessing HuggingFace Hub
-from huggingface_hub import login, HfApi, HfFolder, Repository
+from huggingface_hub import login#, HfApi, HfFolder, Repository
 
 ###################
 
@@ -155,7 +156,7 @@ class PrivateLLMFineTune(TaskBase):
         login(config["HF_READ_TOKEN"])
 
         print("*** STARTING FINE-TUNING ***")
-        print(f"Fine-tuning {config["MODEL_NAME"]} on {config["DATASET_NAME"]}...")
+        print(f"Fine-tuning {config['model_name']} on joined datasets")#{config['DATASET_NAME']}...")
 
     # def ccr_logger_function(ccr_tracking_object, ccr_model):
     #     """
@@ -172,10 +173,13 @@ class PrivateLLMFineTune(TaskBase):
 
     def load_model(self):
         # Load pretrained model configurations and tokenizer
-        local_dir = self.config["saved_model_dir"] + self.config["model_name"].replace("/", "_")
+        # local_dir = self.config["saved_model_dir"] + self.config["model_name"].replace("/", "_")
+        local_dir = os.path.join(self.config["saved_model_dir"], self.config["model_name"].replace("/", "_"))
+
+        print(f"Debug | load_model | local model dir: {local_dir}")
 
         # Load configuration and tokenizer
-        if not local_dir.exists():
+        if not os.path.exists(local_dir):
             raise ValueError(f"Directory not found: {local_dir}")
 
         # Load configuration and tokenizer
@@ -185,10 +189,14 @@ class PrivateLLMFineTune(TaskBase):
         # Create model instance
         self.model = AutoModelForCausalLM.from_config(self.model_config)
         
-        if format.lower() == "pytorch":
-            # Load PyTorch weights
-            state_dict = torch.load(local_dir / "model.pth")
-            self.model.load_state_dict(state_dict)
+        print("Debug | load_model | base model instantiation")
+
+        # if format.lower() == "pytorch":
+        #     # Load PyTorch weights
+        state_dict = torch.load(os.path.join(local_dir, "model.pth"))
+        self.model.load_state_dict(state_dict)
+
+        print("Debug | load_model | base model successfully loaded")
 
         # Ensure padding token is set as EOS
         self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -196,24 +204,95 @@ class PrivateLLMFineTune(TaskBase):
 
     def load_data(self):
 
-        if format == "csv":
-            # Load from CSV
-            df = pd.read_csv(self.config["input_dataset_path"])
-            self.dataset = Dataset.from_pandas(df)
+        # if format == "csv":
+        #     # Load from CSV
+        df = pd.read_csv(self.config["input_dataset_path"])
+        self.dataset = ds.from_pandas(df)
+        print("Debug | load_data | Loaded joined dataset")
+        # print(f"Debug | load_data | columns: {self.dataset.columns}")
 
         def tokenize_function(examples):
             return self.tokenizer(examples, padding="max_length", truncation=True, max_length=self.config["MAX_TOKENS"])
 
-        tokenized_inputs = [tokenize_function(input_text) for input_text in self.dataset["input"]]
-        tokenized_outputs = [tokenize_function(output_text) for output_text in self.dataset["output"]]
+        # tokenized_inputs = [tokenize_function(input_text) for input_text in self.dataset["input"]]
+        # tokenized_outputs = [tokenize_function(output_text) for output_text in self.dataset["output"]]
+
+        tokenized_inputs = self.dataset.map(lambda x: tokenize_function(x["input"]), batched=True)
+        tokenized_outputs = self.dataset.map(lambda x: tokenize_function(x["output"]), batched=True)
+
+        print("Debug | load_data | Tokenized inputs and outputs")
 
         # Create the dataset with tokenized inputs and corresponding outputs
-        train_dataset = [(torch.tensor(t["input_ids"]), torch.tensor(t["attention_mask"]), torch.tensor(output.input_ids)) 
-                        for t, output in zip(tokenized_inputs, tokenized_outputs) if (len(t["input_ids"])>0 and len(output)>0)]
+        # train_dataset = [(torch.tensor(t["input_ids"]), torch.tensor(t["attention_mask"]), torch.tensor(output.input_ids)) 
+        #                 for t, output in zip(tokenized_inputs, tokenized_outputs) if (len(t["input_ids"])>0 and len(output)>0)]
+
+        train_dataset = [
+            (
+                torch.tensor(inp["input_ids"]),
+                torch.tensor(inp["attention_mask"]),
+                torch.tensor(out["input_ids"]),
+            )
+            for inp, out in zip(tokenized_inputs, tokenized_outputs)
+            if (len(inp["input_ids"])>0 and len(out["input_ids"])>0)
+        ]
+
+        if not train_dataset:
+            raise ValueError("No valid examples found after tokenization") 
+        
+        print("Debug | load_data | Tokenized inputs and outputs")
 
         # Create the DataLoader
         self.train_loader = DataLoader(train_dataset, batch_size=self.config["BATCH_SIZE"], shuffle=True)
 
+        print("Debug | load_data | Trainloader prepared")
+
+
+    def load_data1(self):
+        # Load the CSV file
+        df = pd.read_csv(self.config["input_dataset_path"])
+        print("Debug | load_data1 | Loaded joined dataset")
+
+        # Create dataset class
+        class QADataset(Dataset):
+            def __init__(self, outer_parent, inputs, outputs, max_length):
+                self.inputs = inputs
+                self.outputs = outputs
+                self.tokenizer = outer_parent.tokenizer
+                self.max_length = max_length
+            
+            def __len__(self):
+                return len(self.inputs)
+            
+            def __getitem__(self, idx):
+                # Tokenize input and output
+                input_encoding = self.tokenizer(
+                    self.inputs[idx],
+                    truncation=True,
+                    max_length=self.max_length,
+                    padding="max_length",
+                    return_tensors="pt"
+                )
+                
+                output_encoding = self.tokenizer(
+                    self.outputs[idx],
+                    truncation=True,
+                    max_length=self.max_length,
+                    padding="max_length",
+                    return_tensors="pt"
+                )
+                
+                return {
+                    "input_ids": input_encoding["input_ids"].squeeze(),
+                    "attention_mask": input_encoding["attention_mask"].squeeze(),
+                    "labels": output_encoding["input_ids"].squeeze()
+                }
+        
+        # Create dataset and dataloader
+        self.dataset = QADataset(self, df["input"].tolist(), df["output"].tolist(), 512)
+        print("Debug | load_data1 | Tokenized inputs and outputs")
+        self.train_loader = DataLoader(self.dataset, batch_size=self.config["BATCH_SIZE"], shuffle=True)
+        print("Debug | load_data1 | Trainloader prepared")
+    
 
     def load_optimizer_and_scheduler(self):
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.config["LEARNING_RATE"])
@@ -223,6 +302,7 @@ class PrivateLLMFineTune(TaskBase):
             num_warmup_steps=0,
             num_training_steps=self.config["NUM_EPOCHS"] * len(self.train_loader)  # Total number of training steps,
         )
+        print("Debug | load_optimizer_and_scheduler | Optimizer and Scheduler loaded")
 
 
     def apply_lora(self):
@@ -237,10 +317,12 @@ class PrivateLLMFineTune(TaskBase):
     
         # Obtain the parameter-efficient LoRA model
         self.model = get_peft_model(self.model, lora_config)
+        print("Debug | apply_lora | LoRA hooks applied")
 
 
     def make_dprivate(self):
         self.privacy_engine = PrivacyEngine() # secure_mode=True requires torchcsprng to be installed
+        self.model.train()
 
         self.model, self.optimizer, self.train_loader = self.privacy_engine.make_private_with_epsilon(
             module=self.model,
@@ -252,7 +334,10 @@ class PrivateLLMFineTune(TaskBase):
             max_grad_norm=self.config["MAX_GRAD_NORM"], # threshold for clipping the norm of per-sample gradients
         )
 
+        print("Debug | make_dprivate | Opacus PrivacyEngine hooks applied")
+
     def train(self):
+        print("Debug | train | Begin fine-tuning")
         # 8. Training loop with BatchMemoryManager
         self.model.train()
         for epoch in range(1, self.config["NUM_EPOCHS"] + 1):
@@ -266,36 +351,41 @@ class PrivateLLMFineTune(TaskBase):
             ) as memory_safe_loader:
 
                 # Training step
-                for step, batch in enumerate(tqdm(memory_safe_loader, desc=f"Epoch {epoch}/{self.config["NUM_EPOCHS"]}")):
+                for step, batch in enumerate(tqdm(memory_safe_loader, desc=f"Epoch {epoch}/{self.config['NUM_EPOCHS']}")):
+                    self.optimizer.zero_grad()
                     # Move batch to DEVICE
-                    input_ids, attention_mask, labels = batch
-                    input_ids = input_ids.to(self.device)
-                    attention_mask = attention_mask.to(self.device)
-                    labels = labels.to(self.device)
 
-                    # Skip empty batches
+                    # input_ids, attention_mask, labels = batch
+                    # input_ids = input_ids.to(self.device)
+                    # attention_mask = attention_mask.to(self.device)
+                    # labels = labels.to(self.device)
+
+                    input_ids = batch["input_ids"].to(self.device)
+                    attention_mask = batch["attention_mask"].to(self.device)
+                    labels = batch["labels"].to(self.device)
+
+                    # If empty batches are there, skip them
                     if input_ids.size(0) == 0:
                         continue
 
-                    # Forward pass
+                    # Fwd pass
                     outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
                     logits = outputs.logits  # Model predictions
             
-                    # Compute loss
-                    # Shift logits and labels for causal language modeling
+                    # compute loss
+                    # shift logits and labels for causal language modeling
                     shift_logits = logits[..., :-1, :].contiguous()
                     shift_labels = labels[..., 1:].contiguous()
                     loss = self.loss_fn(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
             
-                    # Backward pass and optimization
-                    self.optimizer.zero_grad()
+                    # Bkwd pass and model optim
+                    # self.optimizer.zero_grad()
                     loss.backward()
                     self.optimizer.step()
             
-                    # Record loss
                     losses.append(loss.item())
 
-                    # Log progress every 50 steps
+                    # log progress every 50 steps
                     if step > 0 and step % 50 == 0:
                         train_loss = np.mean(losses)
                         epsilon = self.privacy_engine.get_epsilon(self.config["DELTA"])
@@ -306,7 +396,7 @@ class PrivateLLMFineTune(TaskBase):
                             f"ɛ: {epsilon:.2f}"
                         )
 
-            # Epoch summary
+            # epoch summary
             train_loss = np.mean(losses)
             epsilon = self.privacy_engine.get_epsilon(self.config["DELTA"])
             print(f"Epoch {epoch} completed. Average loss: {train_loss:.4f}, ɛ: {epsilon:.2f}")
@@ -334,7 +424,7 @@ class PrivateLLMFineTune(TaskBase):
         # 10. Push to HuggingFace Hub
         self.model_ft.push_to_hub(self.config["SAVE_MODEL_REPO_NAME"], token=self.config["HF_WRITE_TOKEN"])
         self.tokenizer.push_to_hub(self.config["SAVE_MODEL_REPO_NAME"], token=self.config["HF_WRITE_TOKEN"])
-        print(f"Model and tokenizer pushed to Hugging Face Hub: https://huggingface.co/{self.config["SAVE_MODEL_REPO_NAME"]}")
+        print(f"Model and tokenizer pushed to Hugging Face Hub: https://huggingface.co/{self.config['SAVE_MODEL_REPO_NAME']}")
 
 
     def execute(self, config):
@@ -342,7 +432,7 @@ class PrivateLLMFineTune(TaskBase):
             # --- START OF FINE-TUNING CODE ---
             self.init(config)
             self.load_model()
-            self.load_data()
+            self.load_data1()
             self.load_optimizer_and_scheduler()
             self.apply_lora()
             self.make_dprivate()
@@ -354,4 +444,3 @@ class PrivateLLMFineTune(TaskBase):
         except Exception as e:
             print(f"An error occurred during fine-tuning: {e}")
             exit(1)
-        
