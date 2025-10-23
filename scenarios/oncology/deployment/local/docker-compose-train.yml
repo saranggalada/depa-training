@@ -1,0 +1,11 @@
+services:
+  train:
+    image: ${CONTAINER_REGISTRY:+$CONTAINER_REGISTRY/}depa-training:latest
+    volumes:
+      - $GENOMICS_LAB_INPUT_PATH:/mnt/remote/genomics_lab
+      - $PHARMACEUTICAL_COMPANY_INPUT_PATH:/mnt/remote/pharmaceutical_company
+      - $COMPUTATIONAL_BIOLOGY_LAB_INPUT_PATH:/mnt/remote/computational_biology_lab
+      - $CANCER_INSTITUTE_INPUT_PATH:/mnt/remote/cancer_institute
+      - $MODEL_OUTPUT_PATH:/mnt/remote/output
+      - $CONFIGURATION_PATH:/mnt/remote/config
+    command: [/bin/bash, run.sh]

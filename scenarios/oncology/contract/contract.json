@@ -1,0 +1,132 @@
+{
+  "id": "740cd27c-3544-4128-abab-dec2192e5efa",
+  "schemaVersion": "0.1",
+  "startTime": "2025-09-14T00:00:00.000Z",
+  "expiryTime": "2025-10-14T00:00:00.000Z",
+  "tdc": "",
+  "tdps": [],
+  "ccrp": "did:web:$CCRP_USERNAME.github.io",
+  "datasets": [
+    {
+      "id": "19517ba8-bab8-11ed-afa1-0242ac120002",
+      "name": "sc_expr_matrix.csv",
+      "owner": "genomics_lab",
+      "url": "https://$AZURE_STORAGE_ACCOUNT_NAME.blob.core.windows.net/$AZURE_GENOMICS_LAB_CONTAINER_NAME/data.img",
+      "provider": "",
+      "key": {
+        "type": "azure",
+        "properties": {
+          "kid": "GenomicsLabFilesystemEncryptionKey",
+          "authority": {
+            "endpoint": "sharedneu.neu.attest.azure.net"
+          },
+          "endpoint": ""
+        }
+      }
+    },
+    {
+      "id": "216d5cc6-bab8-11ed-afa1-0242ac120002",
+      "name": "drug_response.csv",
+      "owner": "pharmaceutical_company",
+      "url": "https://$AZURE_STORAGE_ACCOUNT_NAME.blob.core.windows.net/$AZURE_PHARMACEUTICAL_COMPANY_CONTAINER_NAME/data.img",
+      "provider": "",
+      "key": {
+        "type": "azure",
+        "properties": {
+          "kid": "PharmaceuticalCompanyFilesystemEncryptionKey",
+          "authority": {
+            "endpoint": "sharedneu.neu.attest.azure.net"
+          },
+          "endpoint": ""
+        }
+      }
+    },
+    {
+      "id": "2a3b0c4e-bab8-11ed-afa1-0242ac120002",
+      "name": "drug_targets.json",
+      "owner": "pharmaceutical_company",
+      "url": "https://$AZURE_STORAGE_ACCOUNT_NAME.blob.core.windows.net/$AZURE_PHARMACEUTICAL_COMPANY_CONTAINER_NAME/data.img",
+      "provider": "",
+      "key": {
+        "type": "azure",
+        "properties": {
+          "kid": "PharmaceuticalCompanyFilesystemEncryptionKey",
+          "authority": {
+            "endpoint": "sharedneu.neu.attest.azure.net"
+          },
+          "endpoint": ""
+        }
+      }
+    },
+    {
+      "id": "2830a144-bab8-11ed-afa1-0242ac120002",
+      "name": "cell_markers.json",
+      "owner": "computational_biology_lab",
+      "url": "https://$AZURE_STORAGE_ACCOUNT_NAME.blob.core.windows.net/$AZURE_COMPUTATIONAL_BIOLOGY_LAB_CONTAINER_NAME/data.img",
+      "provider": "",
+      "key": {
+        "type": "azure",
+        "properties": {
+          "kid": "ComputationalBiologyLabFilesystemEncryptionKey",
+          "authority": {
+            "endpoint": "sharedneu.neu.attest.azure.net"
+          },
+          "endpoint": ""
+        }
+      }
+    },
+    {
+      "id": "3187712c-bab8-11ed-afa1-0242ac120002",
+      "name": "cell_metadata.csv",
+      "owner": "cancer_institute",
+      "url": "https://$AZURE_STORAGE_ACCOUNT_NAME.blob.core.windows.net/$AZURE_CANCER_INSTITUTE_CONTAINER_NAME/data.img",
+      "provider": "",
+      "key": {
+        "type": "azure",
+        "properties": {
+          "kid": "CancerInstituteFilesystemEncryptionKey",
+          "authority": {
+            "endpoint": "sharedneu.neu.attest.azure.net"
+          },
+          "endpoint": ""
+        }
+      }
+    }
+  ],
+  "purpose": "TRAINING",
+  "constraints": [
+    {
+      "privacy": [
+        {
+          "dataset": "19517ba8-bab8-11ed-afa1-0242ac120002",
+          "epsilon_threshold": "null",
+          "delta": "null"
+        },
+        {
+          "dataset": "216d5cc6-bab8-11ed-afa1-0242ac120002",
+          "epsilon_threshold": "7.5",
+          "delta": "null"
+        },
+        {
+          "dataset": "2a3b0c4e-bab8-11ed-afa1-0242ac120002",
+          "epsilon_threshold": "null",
+          "delta": "null"
+        },
+        {
+          "dataset": "2830a144-bab8-11ed-afa1-0242ac120002",
+          "epsilon_threshold": "null",
+          "delta": "null"
+        },
+        {
+          "dataset": "3187712c-bab8-11ed-afa1-0242ac120002",
+          "epsilon_threshold": "1.5",
+          "delta": "null"
+        }
+      ]
+    }
+  ],
+  "terms": {
+    "payment": {},
+    "revocation": {}
+  }
+}

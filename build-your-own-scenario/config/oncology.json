@@ -1,0 +1,55 @@
+{
+    "scenario_name": "oncology",
+    "tdps": [
+        {
+            "name": "genomics_lab",
+            "datasets": [
+                {
+                    "name": "sc_expr_matrix.csv",
+                    "id": "19517ba8-bab8-11ed-afa1-0242ac120002",
+                    "privacy": false
+                }
+            ]
+        },
+        {
+            "name": "pharmaceutical_company",
+            "datasets": [
+                {
+                    "name": "drug_response.csv",
+                    "id": "216d5cc6-bab8-11ed-afa1-0242ac120002",
+                    "privacy": true,
+                    "epsilon": 7.5
+                },
+                {
+                    "name": "drug_targets.json",
+                    "id": "2a3b0c4e-bab8-11ed-afa1-0242ac120002",
+                    "privacy": false
+                }
+            ]
+        },
+        {
+            "name": "public_database_oncology",
+            "datasets": [
+                {
+                    "name": "cell_markers.json",
+                    "id": "2830a144-bab8-11ed-afa1-0242ac120002",
+                    "privacy": false
+                }
+            ]
+        },
+        {
+            "name": "cancer_institute",
+            "datasets": [
+                {
+                    "name": "cell_metadata.csv",
+                    "id": "3187712c-bab8-11ed-afa1-0242ac120002",
+                    "privacy": true,
+                    "epsilon": 1.5
+                }
+            ]
+        }
+    ],
+    "training_framework": "Train_XGB",
+    "join_type": "SparkJoin",
+    "model_format": "ccr_instantiate"
+}

@@ -1,0 +1,59 @@
+{
+  "name": "SparkJoin",
+  "config": {
+    "datasets": [
+      {
+        "id": "19517ba8-bab8-11ed-afa1-0242ac120002",
+        "provider": "genomics_lab",
+        "name": "sc_expr_matrix.csv",
+        "file": "",
+        "select_variables": [],
+        "mount_path": "/mnt/remote/genomics_lab/"
+      },
+      {
+        "id": "216d5cc6-bab8-11ed-afa1-0242ac120002",
+        "provider": "pharmaceutical_company",
+        "name": "drug_response.csv",
+        "file": "",
+        "select_variables": [],
+        "mount_path": "/mnt/remote/pharmaceutical_company/"
+      },
+      {
+        "id": "2a3b0c4e-bab8-11ed-afa1-0242ac120002",
+        "provider": "pharmaceutical_company",
+        "name": "drug_targets.json",
+        "file": "",
+        "select_variables": [],
+        "mount_path": "/mnt/remote/pharmaceutical_company/"
+      },
+      {
+        "id": "2830a144-bab8-11ed-afa1-0242ac120002",
+        "provider": "computational_biology_lab",
+        "name": "cell_markers.json",
+        "file": "",
+        "select_variables": [],
+        "mount_path": "/mnt/remote/computational_biology_lab/"
+      },
+      {
+        "id": "3187712c-bab8-11ed-afa1-0242ac120002",
+        "provider": "cancer_institute",
+        "name": "cell_metadata.csv",
+        "file": "",
+        "select_variables": [],
+        "mount_path": "/mnt/remote/cancer_institute/"
+      }
+    ],
+    "joined_dataset": {
+      "joined_dataset": "/tmp/oncology_joined_dataset.csv",
+      "joining_query": "SELECT g.cell_id, g.patient, g.type as cell_type, g.sc_expr_matrix, p.drug_response, c.cell_markers, ci.cell_metadata FROM genomics_lab g LEFT JOIN pharmaceutical_company p ON g.patient = p.patient_id LEFT JOIN computational_biology_lab c ON g.patient = c.patient_id LEFT JOIN cancer_institute ci ON g.patient = ci.patient_id",
+      "joining_key": "patient",
+      "drop_columns": [
+        "cell_id"
+      ],
+      "identifiers": [
+        "patient",
+        "drug"
+      ]
+    }
+  }
+}

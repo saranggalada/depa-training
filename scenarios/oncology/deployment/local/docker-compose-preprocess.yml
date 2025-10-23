@@ -1,0 +1,25 @@
+services:
+  genomics_lab:
+    image: ${CONTAINER_REGISTRY:+$CONTAINER_REGISTRY/}preprocess-genomics-lab:latest
+    volumes:
+      - $GENOMICS_LAB_INPUT_PATH:/mnt/input/data
+      - $GENOMICS_LAB_OUTPUT_PATH:/mnt/output/preprocessed
+    command: [python3, preprocess_genomics_lab.py]
+  pharmaceutical_company:
+    image: ${CONTAINER_REGISTRY:+$CONTAINER_REGISTRY/}preprocess-pharmaceutical-company:latest
+    volumes:
+      - $PHARMACEUTICAL_COMPANY_INPUT_PATH:/mnt/input/data
+      - $PHARMACEUTICAL_COMPANY_OUTPUT_PATH:/mnt/output/preprocessed
+    command: [python3, preprocess_pharmaceutical_company.py]
+  computational_biology_lab:
+    image: ${CONTAINER_REGISTRY:+$CONTAINER_REGISTRY/}preprocess-computational-biology-lab:latest
+    volumes:
+      - $COMPUTATIONAL_BIOLOGY_LAB_INPUT_PATH:/mnt/input/data
+      - $COMPUTATIONAL_BIOLOGY_LAB_OUTPUT_PATH:/mnt/output/preprocessed
+    command: [python3, preprocess_computational_biology_lab.py]
+  cancer_institute:
+    image: ${CONTAINER_REGISTRY:+$CONTAINER_REGISTRY/}preprocess-cancer-institute:latest
+    volumes:
+      - $CANCER_INSTITUTE_INPUT_PATH:/mnt/input/data
+      - $CANCER_INSTITUTE_OUTPUT_PATH:/mnt/output/preprocessed
+    command: [python3, preprocess_cancer_institute.py]

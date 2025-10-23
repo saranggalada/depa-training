@@ -1,0 +1,15 @@
+{
+  "name": "Train_XGB",
+  "config": {
+    "paths": {
+      "input_dataset_path": "/tmp/oncology_joined.csv",
+      "trained_model_output_path": "/mnt/remote/output"
+    },
+    "is_private": true,
+    "privacy_params": {
+      "epsilon": 1.5,
+      "delta": null,
+      "mechanism": "laplace"
+    }
+  }
+}

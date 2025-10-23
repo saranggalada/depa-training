@@ -1313,7 +1313,7 @@ echo "export DATA_DIR=\$REPO_ROOT/scenarios/\$SCENARIO/data" >> "$TRAIN_SH"
 echo "export MODEL_DIR=\$REPO_ROOT/scenarios/\$SCENARIO/modeller" >> "$TRAIN_SH"
 for TDP in "${TDP_NAMES[@]}"; do
   UPPER_TDP=$(echo "$TDP" | tr '[:lower:]' '[:upper:]')
-  echo "export \$${UPPER_TDP}_INPUT_PATH=\$DATA_DIR/${TDP}/preprocessed" >> "$TRAIN_SH"
+  echo "export ${UPPER_TDP}_INPUT_PATH=\$DATA_DIR/${TDP}/preprocessed" >> "$TRAIN_SH"
 done
 if [ "$MODEL_FORMAT" != "ccr_instantiate" ]; then
   echo "export MODEL_INPUT_PATH=\$MODEL_DIR/models" >> "$TRAIN_SH"

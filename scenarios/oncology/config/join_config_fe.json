@@ -1,0 +1,33 @@
+{
+  "name": "SparkJoin",
+  "config": {
+    "datasets": [
+      {
+        "id": "cell_features",
+        "provider": "features",
+        "name": "cell_features",
+        "file": "cell_features.csv",
+        "select_variables": [],
+        "mount_path": "/mnt/remote/features/"
+      },
+      {
+        "id": "drug_response_long",
+        "provider": "features",
+        "name": "drug_response_long",
+        "file": "drug_response_long.csv",
+        "select_variables": [],
+        "mount_path": "/mnt/remote/features/"
+      }
+    ],
+    "joined_dataset": {
+      "joined_dataset": "/tmp/oncology_joined_dataset.csv",
+      "joining_query": "SELECT cf.cell_id, cf.patient, cf.type as cell_type, cf.Venetoclax, cf.Azacitidine, cf.`MK-2206`, cf.SAR405838, cf.Molibresib, cf.`MK-8776`, cf.Seliciclib, cf.`BX-912`, cf.Navitoclax, cf.Sorafenib, cf.Midostaurin, cf.Dasatinib, cf.Gilteritinib, cf.Idasanutlin, cf.AML_blast_score, cf.Monocyte_score, cf.Tcell_score, cf.NKcell_score, cf.Bcell_score, dr.drug, dr.drug_response FROM cell_features cf LEFT JOIN drug_response_long dr ON cf.patient = dr.patient_id",
+      "joining_key": "patient",
+      "drop_columns": [],
+      "identifiers": [
+        "patient",
+        "cell_id"
+      ]
+    }
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "pipeline": [
+    {
+      "name": "SparkJoin",
+      "config": {
+        "datasets": [
+          {
+            "id": "19517ba8-bab8-11ed-afa1-0242ac120002",
+            "provider": "genomics_lab",
+            "name": "single_cell_expression_matrix",
+            "file": "sc_expr_matrix.csv",
+            "select_variables": [],
+            "mount_path": "/mnt/remote/genomics_lab/"
+          },
+          {
+            "id": "216d5cc6-bab8-11ed-afa1-0242ac120002",
+            "provider": "pharmaceutical_company",
+            "name": "drug_response",
+            "file": "drug_response.csv",
+            "select_variables": [],
+            "mount_path": "/mnt/remote/pharmaceutical_company/"
+          },
+          {
+            "id": "2a3b0c4e-bab8-11ed-afa1-0242ac120002",
+            "provider": "pharmaceutical_company",
+            "name": "drug_targets",
+            "file": "drug_targets.json",
+            "select_variables": [],
+            "mount_path": "/mnt/remote/pharmaceutical_company/"
+          },
+          {
+            "id": "2830a144-bab8-11ed-afa1-0242ac120002",
+            "provider": "computational_biology_lab",
+            "name": "cell_markers",
+            "file": "cell_markers.json",
+            "select_variables": [],
+            "mount_path": "/mnt/remote/computational_biology_lab/"
+          },
+          {
+            "id": "3187712c-bab8-11ed-afa1-0242ac120002",
+            "provider": "cancer_institute",
+            "name": "cell_metadata",
+            "file": "cell_metadata.csv",
+            "select_variables": [],
+            "mount_path": "/mnt/remote/cancer_institute/"
+          }
+        ],
+        "joined_dataset": {
+          "joined_dataset": "/tmp/oncology_joined.csv",
+          "joining_query": "WITH expr_long AS (SELECT gene, cell_id, expression FROM (SELECT _c0 AS gene, stack(250, 'cell_1', cell_1, 'cell_2', cell_2, 'cell_3', cell_3, 'cell_4', cell_4, 'cell_5', cell_5, 'cell_6', cell_6, 'cell_7', cell_7, 'cell_8', cell_8, 'cell_9', cell_9, 'cell_10', cell_10, 'cell_11', cell_11, 'cell_12', cell_12, 'cell_13', cell_13, 'cell_14', cell_14, 'cell_15', cell_15, 'cell_16', cell_16, 'cell_17', cell_17, 'cell_18', cell_18, 'cell_19', cell_19, 'cell_20', cell_20, 'cell_21', cell_21, 'cell_22', cell_22, 'cell_23', cell_23, 'cell_24', cell_24, 'cell_25', cell_25, 'cell_26', cell_26, 'cell_27', cell_27, 'cell_28', cell_28, 'cell_29', cell_29, 'cell_30', cell_30, 'cell_31', cell_31, 'cell_32', cell_32, 'cell_33', cell_33, 'cell_34', cell_34, 'cell_35', cell_35, 'cell_36', cell_36, 'cell_37', cell_37, 'cell_38', cell_38, 'cell_39', cell_39, 'cell_40', cell_40, 'cell_41', cell_41, 'cell_42', cell_42, 'cell_43', cell_43, 'cell_44', cell_44, 'cell_45', cell_45, 'cell_46', cell_46, 'cell_47', cell_47, 'cell_48', cell_48, 'cell_49', cell_49, 'cell_50', cell_50, 'cell_51', cell_51, 'cell_52', cell_52, 'cell_53', cell_53, 'cell_54', cell_54, 'cell_55', cell_55, 'cell_56', cell_56, 'cell_57', cell_57, 'cell_58', cell_58, 'cell_59', cell_59, 'cell_60', cell_60, 'cell_61', cell_61, 'cell_62', cell_62, 'cell_63', cell_63, 'cell_64', cell_64, 'cell_65', cell_65, 'cell_66', cell_66, 'cell_67', cell_67, 'cell_68', cell_68, 'cell_69', cell_69, 'cell_70', cell_70, 'cell_71', cell_71, 'cell_72', cell_72, 'cell_73', cell_73, 'cell_74', cell_74, 'cell_75', cell_75, 'cell_76', cell_76, 'cell_77', cell_77, 'cell_78', cell_78, 'cell_79', cell_79, 'cell_80', cell_80, 'cell_81', cell_81, 'cell_82', cell_82, 'cell_83', cell_83, 'cell_84', cell_84, 'cell_85', cell_85, 'cell_86', cell_86, 'cell_87', cell_87, 'cell_88', cell_88, 'cell_89', cell_89, 'cell_90', cell_90, 'cell_91', cell_91, 'cell_92', cell_92, 'cell_93', cell_93, 'cell_94', cell_94, 'cell_95', cell_95, 'cell_96', cell_96, 'cell_97', cell_97, 'cell_98', cell_98, 'cell_99', cell_99, 'cell_100', cell_100, 'cell_101', cell_101, 'cell_102', cell_102, 'cell_103', cell_103, 'cell_104', cell_104, 'cell_105', cell_105, 'cell_106', cell_106, 'cell_107', cell_107, 'cell_108', cell_108, 'cell_109', cell_109, 'cell_110', cell_110, 'cell_111', cell_111, 'cell_112', cell_112, 'cell_113', cell_113, 'cell_114', cell_114, 'cell_115', cell_115, 'cell_116', cell_116, 'cell_117', cell_117, 'cell_118', cell_118, 'cell_119', cell_119, 'cell_120', cell_120, 'cell_121', cell_121, 'cell_122', cell_122, 'cell_123', cell_123, 'cell_124', cell_124, 'cell_125', cell_125, 'cell_126', cell_126, 'cell_127', cell_127, 'cell_128', cell_128, 'cell_129', cell_129, 'cell_130', cell_130, 'cell_131', cell_131, 'cell_132', cell_132, 'cell_133', cell_133, 'cell_134', cell_134, 'cell_135', cell_135, 'cell_136', cell_136, 'cell_137', cell_137, 'cell_138', cell_138, 'cell_139', cell_139, 'cell_140', cell_140, 'cell_141', cell_141, 'cell_142', cell_142, 'cell_143', cell_143, 'cell_144', cell_144, 'cell_145', cell_145, 'cell_146', cell_146, 'cell_147', cell_147, 'cell_148', cell_148, 'cell_149', cell_149, 'cell_150', cell_150, 'cell_151', cell_151, 'cell_152', cell_152, 'cell_153', cell_153, 'cell_154', cell_154, 'cell_155', cell_155, 'cell_156', cell_156, 'cell_157', cell_157, 'cell_158', cell_158, 'cell_159', cell_159, 'cell_160', cell_160, 'cell_161', cell_161, 'cell_162', cell_162, 'cell_163', cell_163, 'cell_164', cell_164, 'cell_165', cell_165, 'cell_166', cell_166, 'cell_167', cell_167, 'cell_168', cell_168, 'cell_169', cell_169, 'cell_170', cell_170, 'cell_171', cell_171, 'cell_172', cell_172, 'cell_173', cell_173, 'cell_174', cell_174, 'cell_175', cell_175, 'cell_176', cell_176, 'cell_177', cell_177, 'cell_178', cell_178, 'cell_179', cell_179, 'cell_180', cell_180, 'cell_181', cell_181, 'cell_182', cell_182, 'cell_183', cell_183, 'cell_184', cell_184, 'cell_185', cell_185, 'cell_186', cell_186, 'cell_187', cell_187, 'cell_188', cell_188, 'cell_189', cell_189, 'cell_190', cell_190, 'cell_191', cell_191, 'cell_192', cell_192, 'cell_193', cell_193, 'cell_194', cell_194, 'cell_195', cell_195, 'cell_196', cell_196, 'cell_197', cell_197, 'cell_198', cell_198, 'cell_199', cell_199, 'cell_200', cell_200, 'cell_201', cell_201, 'cell_202', cell_202, 'cell_203', cell_203, 'cell_204', cell_204, 'cell_205', cell_205, 'cell_206', cell_206, 'cell_207', cell_207, 'cell_208', cell_208, 'cell_209', cell_209, 'cell_210', cell_210, 'cell_211', cell_211, 'cell_212', cell_212, 'cell_213', cell_213, 'cell_214', cell_214, 'cell_215', cell_215, 'cell_216', cell_216, 'cell_217', cell_217, 'cell_218', cell_218, 'cell_219', cell_219, 'cell_220', cell_220, 'cell_221', cell_221, 'cell_222', cell_222, 'cell_223', cell_223, 'cell_224', cell_224, 'cell_225', cell_225, 'cell_226', cell_226, 'cell_227', cell_227, 'cell_228', cell_228, 'cell_229', cell_229, 'cell_230', cell_230, 'cell_231', cell_231, 'cell_232', cell_232, 'cell_233', cell_233, 'cell_234', cell_234, 'cell_235', cell_235, 'cell_236', cell_236, 'cell_237', cell_237, 'cell_238', cell_238, 'cell_239', cell_239, 'cell_240', cell_240, 'cell_241', cell_241, 'cell_242', cell_242, 'cell_243', cell_243, 'cell_244', cell_244, 'cell_245', cell_245, 'cell_246', cell_246, 'cell_247', cell_247, 'cell_248', cell_248, 'cell_249', cell_249, 'cell_250', cell_250) AS (cell_id, expression) FROM single_cell_expression_matrix)), drug_targets_exploded AS (SELECT drug, target_gene FROM (SELECT explode(map('Venetoclax', array('BCL2'), 'Azacitidine', array('DNMT1', 'IDH2'), 'MK-2206', array('AKT1', 'AKT2', 'AKT3'), 'SAR405838', array('MDM2'), 'Molibresib', array('BRD4'), 'MK-8776', array('CHEK1'), 'Seliciclib', array('CDK2', 'CDK7', 'CDK9'), 'BX-912', array('PDK1'), 'Navitoclax', array('BCL2', 'BCL2L1'), 'Sorafenib', array('FLT3', 'KIT'), 'Midostaurin', array('FLT3', 'KIT'), 'Dasatinib', array('SRC', 'ABL1', 'KIT'), 'Gilteritinib', array('FLT3'), 'Idasanutlin', array('MDM2'))) AS (drug, target_genes) FROM drug_targets LIMIT 1) LATERAL VIEW explode(target_genes) AS target_gene), cell_markers_exploded AS (SELECT cell_type, marker_gene FROM (SELECT explode(map('AML_blast', array('CD34', 'CD33', 'CD38', 'PROM1', 'ENG', 'CD99', 'KIT'), 'Monocyte', array('CD14', 'CD11b'), 'Tcell', array('CD3', 'CD4', 'CD8'), 'NKcell', array('CD56'), 'Bcell', array('CD19'))) AS (cell_type, marker_genes) FROM cell_markers LIMIT 1) LATERAL VIEW explode(marker_genes) AS marker_gene), gene_set_enrichment AS (SELECT el.cell_id, dte.drug, AVG(el.expression) AS drug_score FROM expr_long el INNER JOIN drug_targets_exploded dte ON el.gene = dte.target_gene GROUP BY el.cell_id, dte.drug), cell_type_scores AS (SELECT el.cell_id, cme.cell_type, AVG(el.expression) AS cell_type_score FROM expr_long el INNER JOIN cell_markers_exploded cme ON el.gene = cme.marker_gene GROUP BY el.cell_id, cme.cell_type), gene_set_wide AS (SELECT cell_id, MAX(CASE WHEN drug = 'Venetoclax' THEN drug_score END) AS Venetoclax_expr, MAX(CASE WHEN drug = 'Azacitidine' THEN drug_score END) AS Azacitidine_expr, MAX(CASE WHEN drug = 'MK-2206' THEN drug_score END) AS `MK-2206_expr`, MAX(CASE WHEN drug = 'SAR405838' THEN drug_score END) AS SAR405838_expr, MAX(CASE WHEN drug = 'Molibresib' THEN drug_score END) AS Molibresib_expr, MAX(CASE WHEN drug = 'MK-8776' THEN drug_score END) AS `MK-8776_expr`, MAX(CASE WHEN drug = 'Seliciclib' THEN drug_score END) AS Seliciclib_expr, MAX(CASE WHEN drug = 'BX-912' THEN drug_score END) AS `BX-912_expr`, MAX(CASE WHEN drug = 'Navitoclax' THEN drug_score END) AS Navitoclax_expr, MAX(CASE WHEN drug = 'Sorafenib' THEN drug_score END) AS Sorafenib_expr, MAX(CASE WHEN drug = 'Midostaurin' THEN drug_score END) AS Midostaurin_expr, MAX(CASE WHEN drug = 'Dasatinib' THEN drug_score END) AS Dasatinib_expr, MAX(CASE WHEN drug = 'Gilteritinib' THEN drug_score END) AS Gilteritinib_expr, MAX(CASE WHEN drug = 'Idasanutlin' THEN drug_score END) AS Idasanutlin_expr FROM gene_set_enrichment GROUP BY cell_id), cell_type_wide AS (SELECT cell_id, MAX(CASE WHEN cell_type = 'AML_blast' THEN cell_type_score END) AS AML_blast_score, MAX(CASE WHEN cell_type = 'Monocyte' THEN cell_type_score END) AS Monocyte_score, MAX(CASE WHEN cell_type = 'Tcell' THEN cell_type_score END) AS Tcell_score, MAX(CASE WHEN cell_type = 'NKcell' THEN cell_type_score END) AS NKcell_score, MAX(CASE WHEN cell_type = 'Bcell' THEN cell_type_score END) AS Bcell_score FROM cell_type_scores GROUP BY cell_id), cell_features AS (SELECT cm.cell AS cell_id, cm.patient, cm.type AS cell_type, gsw.Venetoclax_expr, gsw.Azacitidine_expr, gsw.`MK-2206_expr`, gsw.SAR405838_expr, gsw.Molibresib_expr, gsw.`MK-8776_expr`, gsw.Seliciclib_expr, gsw.`BX-912_expr`, gsw.Navitoclax_expr, gsw.Sorafenib_expr, gsw.Midostaurin_expr, gsw.Dasatinib_expr, gsw.Gilteritinib_expr, gsw.Idasanutlin_expr, ctw.AML_blast_score, ctw.Monocyte_score, ctw.Tcell_score, ctw.NKcell_score, ctw.Bcell_score FROM cell_metadata cm INNER JOIN gene_set_wide gsw ON cm.cell = gsw.cell_id INNER JOIN cell_type_wide ctw ON cm.cell = ctw.cell_id), patient_features AS (SELECT patient, AVG(Venetoclax_expr) AS Venetoclax_avg, AVG(Azacitidine_expr) AS Azacitidine_avg, AVG(`MK-2206_expr`) AS `MK-2206_avg`, AVG(SAR405838_expr) AS SAR405838_avg, AVG(Molibresib_expr) AS Molibresib_avg, AVG(`MK-8776_expr`) AS `MK-8776_avg`, AVG(Seliciclib_expr) AS Seliciclib_avg, AVG(`BX-912_expr`) AS `BX-912_avg`, AVG(Navitoclax_expr) AS Navitoclax_avg, AVG(Sorafenib_expr) AS Sorafenib_avg, AVG(Midostaurin_expr) AS Midostaurin_avg, AVG(Dasatinib_expr) AS Dasatinib_avg, AVG(Gilteritinib_expr) AS Gilteritinib_avg, AVG(Idasanutlin_expr) AS Idasanutlin_avg, AVG(AML_blast_score) AS AML_blast_avg, AVG(Monocyte_score) AS Monocyte_avg, AVG(Tcell_score) AS Tcell_avg, AVG(NKcell_score) AS NKcell_avg, AVG(Bcell_score) AS Bcell_avg FROM cell_features GROUP BY patient), drug_response_long AS (SELECT patient, drug, response FROM (SELECT _c0 AS patient, stack(14, 'Venetoclax', Venetoclax, 'Azacitidine', Azacitidine, 'MK-2206', `MK-2206`, 'SAR405838', SAR405838, 'Molibresib', Molibresib, 'MK-8776', `MK-8776`, 'Seliciclib', Seliciclib, 'BX-912', `BX-912`, 'Navitoclax', Navitoclax, 'Sorafenib', Sorafenib, 'Midostaurin', Midostaurin, 'Dasatinib', Dasatinib, 'Gilteritinib', Gilteritinib, 'Idasanutlin', Idasanutlin) AS (drug, response) FROM drug_response)) SELECT pf.patient, drl.drug, drl.response, pf.Venetoclax_avg, pf.Azacitidine_avg, pf.`MK-2206_avg`, pf.SAR405838_avg, pf.Molibresib_avg, pf.`MK-8776_avg`, pf.Seliciclib_avg, pf.`BX-912_avg`, pf.Navitoclax_avg, pf.Sorafenib_avg, pf.Midostaurin_avg, pf.Dasatinib_avg, pf.Gilteritinib_avg, pf.Idasanutlin_avg, pf.AML_blast_avg, pf.Monocyte_avg, pf.Tcell_avg, pf.NKcell_avg, pf.Bcell_avg FROM patient_features pf INNER JOIN drug_response_long drl ON pf.patient = drl.patient",
+          "joining_key": "",
+          "drop_columns": [
+            "cell_id"
+          ],
+          "identifiers": [
+            "patient",
+            "drug"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Train_XGB",
+      "config": {
+        "paths": {
+          "input_dataset_path": "/tmp/oncology_joined.csv",
+          "trained_model_output_path": "/mnt/remote/output"
+        },
+        "is_private": true,
+        "privacy_params": {
+          "epsilon": 1.5,
+          "delta": null,
+          "mechanism": "laplace"
+        },
+        "model_config": {
+          "num_boost_round": 250,
+          "booster_params": {
+            "max_depth": 6,
+            "learning_rate": 0.05,
+            "l2_regularization": 1.0,
+            "min_child_weight": 1.0,
+            "objective": "binary:logistic",
+            "eval_metric": "auc"
+          }
+        },
+        "dataset_config": {
+          "type": "tabular",
+          "target_variable": "response",
+          "preprocessing": {
+            "scaler": "standard"
+          },
+          "missing_strategy": "drop",
+          "splits": {
+            "train": 0.8,
+            "val": 0.1,
+            "test": 0.1,
+            "random_state": 42,
+            "stratify": true
+          },
+          "data_type": "numpy"
+        },
+        "metrics": [
+          "accuracy",
+          "roc_auc",
+          "confusion_matrix",
+          "classification_report"
+        ],
+        "task_type": "classification"
+      }
+    }
+  ]
+}
