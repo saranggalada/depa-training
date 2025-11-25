@@ -104,7 +104,7 @@
         },
         {
           "dataset": "216d5cc6-bab8-11ed-afa1-0242ac120002",
-          "epsilon_threshold": "7.5",
+          "epsilon_threshold": "12.5",
           "delta": "null"
         },
         {
@@ -119,7 +119,7 @@
         },
         {
           "dataset": "3187712c-bab8-11ed-afa1-0242ac120002",
-          "epsilon_threshold": "1.5",
+          "epsilon_threshold": "7.5",
           "delta": "null"
         }
       ]

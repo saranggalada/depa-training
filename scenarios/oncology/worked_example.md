@@ -327,3 +327,15 @@ The **same SQL query structure** processes:
 **All in a single SQL query!** 🚀
 
 
+
+
+
+
+
+
+
+
+
+
+
+

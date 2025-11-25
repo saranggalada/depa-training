@@ -8,4 +8,5 @@ services:
       - $CANCER_INSTITUTE_INPUT_PATH:/mnt/remote/cancer_institute
       - $MODEL_OUTPUT_PATH:/mnt/remote/output
       - $CONFIGURATION_PATH:/mnt/remote/config
+      - $FEATURE_ENGINEERING_PATH:/mnt/remote/feature_engg
     command: [/bin/bash, run.sh]

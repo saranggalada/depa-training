@@ -1,0 +1,342 @@
+{
+    "name": "SparkJoinWithFeatureEngineering",
+    "config": {
+        "datasets": [
+            {
+                "id": "19517ba8-bab8-11ed-afa1-0242ac120002",
+                "provider": "genomics_lab",
+                "name": "expression_data",
+                "file": "sc_expr_matrix.csv",
+                "select_variables": [
+                    "BCL2",
+                    "CD34",
+                    "CD14",
+                    "CD33",
+                    "CD117",
+                    "CD13",
+                    "CD15",
+                    "CD11b",
+                    "CD68",
+                    "CD163",
+                    "CD3",
+                    "CD4",
+                    "CD8",
+                    "CD2",
+                    "CD19",
+                    "CD20",
+                    "CD22",
+                    "CD79a",
+                    "CD56",
+                    "CD16",
+                    "CD94",
+                    "CD71",
+                    "CD235a",
+                    "CD36",
+                    "CD41",
+                    "CD42b",
+                    "CD61"
+                ],
+                "mount_path": "/mnt/remote/genomics_lab/preprocessed/"
+            },
+            {
+                "id": "216d5cc6-bab8-11ed-afa1-0242ac120002",
+                "provider": "pharmaceutical_company",
+                "name": "drug_response",
+                "file": "drug_response.csv",
+                "select_variables": [
+                    "Venetoclax",
+                    "Azacitidine",
+                    "Cytarabine",
+                    "Daunorubicin",
+                    "Idarubicin",
+                    "Mitoxantrone",
+                    "Etoposide",
+                    "Fludarabine",
+                    "Cladribine",
+                    "Clofarabine",
+                    "Nelarabine",
+                    "Decitabine",
+                    "Vidaza",
+                    "Gemtuzumab"
+                ],
+                "mount_path": "/mnt/remote/pharmaceutical_company/preprocessed/"
+            },
+            {
+                "id": "2830a144-bab8-11ed-afa1-0242ac120002",
+                "provider": "cancer_institute",
+                "name": "cell_metadata",
+                "file": "cell_metadata.csv",
+                "select_variables": [
+                    "cell",
+                    "patient",
+                    "type"
+                ],
+                "mount_path": "/mnt/remote/cancer_institute/preprocessed/"
+            }
+        ],
+        "joined_dataset": {
+            "joined_dataset": "/tmp/oncology_joined_with_features.parquet",
+            "joining_query": "SELECT * FROM expression_data e LEFT JOIN cell_metadata c ON e.cell_id = c.cell LEFT JOIN drug_response d ON c.patient = d.patient_id",
+            "joining_key": "cell_id",
+            "drop_columns": [],
+            "identifiers": [
+                "cell_id"
+            ]
+        },
+        "feature_engineering": {
+            "metadata": {
+                "name": "Oncology Feature Engineering Pipeline",
+                "description": "Configurable feature engineering for oncology scenario",
+                "version": "1.0.0"
+            },
+            "pipeline": {
+                "load_drug_targets": {
+                    "type": "load",
+                    "file_path": "/mnt/remote/pharmaceutical_company/preprocessed/drug_targets.json",
+                    "format": "json"
+                },
+                "load_cell_markers": {
+                    "type": "load",
+                    "file_path": "/mnt/remote/computational_biology_lab/preprocessed/cell_markers.json",
+                    "format": "json"
+                },
+                "compute_gene_set_enrichment": {
+                    "type": "transform",
+                    "inputs": {
+                        "expr_data": "joined_data",
+                        "drug_targets": "load_drug_targets"
+                    },
+                    "operation": "gene_set_enrichment",
+                    "params": {
+                        "target_genes": {
+                            "Venetoclax": [
+                                "BCL2"
+                            ],
+                            "Azacitidine": [
+                                "DNMT1",
+                                "IDH2"
+                            ],
+                            "Cytarabine": [
+                                "DNA_POL",
+                                "TOP2A"
+                            ],
+                            "Daunorubicin": [
+                                "TOP2A",
+                                "ABCB1"
+                            ],
+                            "Idarubicin": [
+                                "TOP2A",
+                                "ABCB1"
+                            ],
+                            "Mitoxantrone": [
+                                "TOP2A",
+                                "ABCB1"
+                            ],
+                            "Etoposide": [
+                                "TOP2A",
+                                "ABCB1"
+                            ],
+                            "Fludarabine": [
+                                "DNA_POL",
+                                "RRM1"
+                            ],
+                            "Cladribine": [
+                                "DNA_POL",
+                                "RRM1"
+                            ],
+                            "Clofarabine": [
+                                "DNA_POL",
+                                "RRM1"
+                            ],
+                            "Nelarabine": [
+                                "DNA_POL",
+                                "RRM1"
+                            ],
+                            "Decitabine": [
+                                "DNMT1",
+                                "DNMT3A"
+                            ],
+                            "Vidaza": [
+                                "DNMT1",
+                                "DNMT3A"
+                            ],
+                            "Gemtuzumab": [
+                                "CD33",
+                                "CD123"
+                            ]
+                        },
+                        "index_name": "cell_id"
+                    }
+                },
+                "compute_cell_type_scores": {
+                    "type": "transform",
+                    "inputs": {
+                        "expr_data": "joined_data",
+                        "cell_markers": "load_cell_markers"
+                    },
+                    "operation": "scoring",
+                    "params": {
+                        "markers": {
+                            "AML_blast": [
+                                "CD34",
+                                "CD33",
+                                "CD117",
+                                "CD13",
+                                "CD15"
+                            ],
+                            "Monocyte": [
+                                "CD14",
+                                "CD11b",
+                                "CD68",
+                                "CD163"
+                            ],
+                            "T_cell": [
+                                "CD3",
+                                "CD4",
+                                "CD8",
+                                "CD2"
+                            ],
+                            "B_cell": [
+                                "CD19",
+                                "CD20",
+                                "CD22",
+                                "CD79a"
+                            ],
+                            "NK_cell": [
+                                "CD56",
+                                "CD16",
+                                "CD94"
+                            ],
+                            "Erythroid": [
+                                "CD71",
+                                "CD235a",
+                                "CD36"
+                            ],
+                            "Megakaryocyte": [
+                                "CD41",
+                                "CD42b",
+                                "CD61"
+                            ]
+                        },
+                        "index_name": "cell_id",
+                        "suffix": "_score"
+                    }
+                },
+                "add_enrichment_features": {
+                    "type": "join",
+                    "left": "joined_data",
+                    "right": "compute_gene_set_enrichment",
+                    "on": "cell_id",
+                    "how": "left"
+                },
+                "add_cell_type_scores": {
+                    "type": "join",
+                    "left": "add_enrichment_features",
+                    "right": "compute_cell_type_scores",
+                    "on": "cell_id",
+                    "how": "left"
+                },
+                "aggregate_to_patient_level": {
+                    "type": "aggregate",
+                    "inputs": {
+                        "cell_features": "add_cell_type_scores"
+                    },
+                    "group_by": "patient",
+                    "aggregations": {
+                        "Venetoclax": "mean",
+                        "Azacitidine": "mean",
+                        "Cytarabine": "mean",
+                        "Daunorubicin": "mean",
+                        "Idarubicin": "mean",
+                        "Mitoxantrone": "mean",
+                        "Etoposide": "mean",
+                        "Fludarabine": "mean",
+                        "Cladribine": "mean",
+                        "Clofarabine": "mean",
+                        "Nelarabine": "mean",
+                        "Decitabine": "mean",
+                        "Vidaza": "mean",
+                        "Gemtuzumab": "mean",
+                        "AML_blast_score": "mean",
+                        "Monocyte_score": "mean",
+                        "T_cell_score": "mean",
+                        "B_cell_score": "mean",
+                        "NK_cell_score": "mean",
+                        "Erythroid_score": "mean",
+                        "Megakaryocyte_score": "mean"
+                    }
+                },
+                "normalize_features": {
+                    "type": "preprocess",
+                    "inputs": {
+                        "patient_features": "aggregate_to_patient_level"
+                    },
+                    "method": "minmax_scale",
+                    "feature_columns": [
+                        "Venetoclax",
+                        "Azacitidine",
+                        "Cytarabine",
+                        "Daunorubicin",
+                        "Idarubicin",
+                        "Mitoxantrone",
+                        "Etoposide",
+                        "Fludarabine",
+                        "Cladribine",
+                        "Clofarabine",
+                        "Nelarabine",
+                        "Decitabine",
+                        "Vidaza",
+                        "Gemtuzumab",
+                        "AML_blast_score",
+                        "Monocyte_score",
+                        "T_cell_score",
+                        "B_cell_score",
+                        "NK_cell_score",
+                        "Erythroid_score",
+                        "Megakaryocyte_score"
+                    ],
+                    "scaler_name": "feature_scaler"
+                },
+                "final_training_dataset": {
+                    "type": "transform",
+                    "inputs": {
+                        "normalized_data": "normalize_features"
+                    },
+                    "operation": "select_columns",
+                    "params": {
+                        "columns": [
+                            "patient",
+                            "Venetoclax",
+                            "Azacitidine",
+                            "Cytarabine",
+                            "Daunorubicin",
+                            "Idarubicin",
+                            "Mitoxantrone",
+                            "Etoposide",
+                            "Fludarabine",
+                            "Cladribine",
+                            "Clofarabine",
+                            "Nelarabine",
+                            "Decitabine",
+                            "Vidaza",
+                            "Gemtuzumab",
+                            "AML_blast_score",
+                            "Monocyte_score",
+                            "T_cell_score",
+                            "B_cell_score",
+                            "NK_cell_score",
+                            "Erythroid_score",
+                            "Megakaryocyte_score"
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+

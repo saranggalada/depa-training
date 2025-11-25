@@ -4,5 +4,5 @@ docker build -f ci/Dockerfile.pharmaceuticalcompany src -t preprocess-pharmaceut
 docker build -f ci/Dockerfile.computationalbiologylab src -t preprocess-computational-biology-lab:latest
 docker build -f ci/Dockerfile.cancerinstitute src -t preprocess-cancer-institute:latest
 
-# DEBUG: feature engineering
-docker build -f ci/Dockerfile.feature_engineering src -t oncology-feature-engineering:latest
+# # DEBUG: feature engineering
+# docker build -f ci/Dockerfile.datacollab src -t oncology-feature-engineering:latest

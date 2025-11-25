@@ -11,7 +11,7 @@ print("Generating sc_expr_matrix.csv for genomics_lab...")
 
 gene_names = [
     # Core AML/Leukemic blast markers and differentiation genes
-    'CD34', 'CD33', 'CD38', 'PROM1', 'ENG', 'CD99', 'KIT', 'CD14', 'CD11b',
+    'CD34', 'CD33', 'CD38', 'PROM1', 'ENG', 'CD99', 'CD14', 'CD11b',
     # Hematopoietic and lymphoid lineage
     'CD3', 'CD4', 'CD8', 'CD56', 'CD19', 'CD117', 'CD45',
     # Apoptosis and cell cycle (therapy targets)
@@ -51,7 +51,8 @@ for idx, ctype in enumerate(cell_types):
         else:
             expr_array[gidx, idx] = np.random.uniform(1, 5)
 
-expr_df = pd.DataFrame(expr_array, index=gene_names, columns=cell_ids)
+# Create transposed dataframe with cells as rows and genes as columns
+expr_df = pd.DataFrame(expr_array.T, columns=gene_names, index=cell_ids)
 expr_df.to_csv(f'{output_dir}/sc_expr_matrix.csv')
 
 print(f"Generated sc_expr_matrix.csv with shape {expr_df.shape}")

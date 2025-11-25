@@ -1,6 +1,6 @@
 {
   "type": "tabular",
-  "target_variable": "response",
+  "target_variable": "drug_response",
   "preprocessing": {
     "scaler": "standard"
   },
@@ -9,8 +9,7 @@
     "train": 0.8,
     "val": 0.1,
     "test": 0.1,
-    "random_state": 42,
-    "stratify": true
+    "random_state": 42
   },
   "data_type": "numpy"
 }

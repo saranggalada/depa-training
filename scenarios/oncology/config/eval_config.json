@@ -1,9 +1,8 @@
 {
-  "task_type": "classification",
+  "task_type": "regression",
   "metrics": [
-    "accuracy",
-    "roc_auc",
-    "confusion_matrix",
-    "classification_report"
+    "rmse",
+    "mae",
+    "r2_score"
   ]
 }

@@ -1,0 +1,505 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Feature Engineering Configuration Schema",
+    "description": "Schema for configurable feature engineering pipeline with security guardrails",
+    "type": "object",
+    "required": [
+        "pipeline"
+    ],
+    "properties": {
+        "pipeline": {
+            "type": "object",
+            "description": "Dictionary of feature engineering steps",
+            "patternProperties": {
+                "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+                    "type": "object",
+                    "required": [
+                        "type"
+                    ],
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "load",
+                                "transform",
+                                "aggregate",
+                                "join",
+                                "preprocess",
+                                "custom"
+                            ],
+                            "description": "Type of feature engineering step"
+                        },
+                        "inputs": {
+                            "type": "object",
+                            "description": "Mapping of input names to data source references",
+                            "patternProperties": {
+                                "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+                                    "type": "string",
+                                    "description": "Reference to data source or previous step output"
+                                }
+                            }
+                        },
+                        "outputs": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "List of output names for this step"
+                        }
+                    },
+                    "allOf": [
+                        {
+                            "if": {
+                                "properties": {
+                                    "type": {
+                                        "const": "load"
+                                    }
+                                }
+                            },
+                            "then": {
+                                "required": [
+                                    "format"
+                                ],
+                                "properties": {
+                                    "file_path": {
+                                        "type": "string",
+                                        "description": "Path to the file to load"
+                                    },
+                                    "data_source": {
+                                        "type": "string",
+                                        "description": "Reference to data source containing file path"
+                                    },
+                                    "format": {
+                                        "type": "string",
+                                        "enum": [
+                                            "csv",
+                                            "parquet",
+                                            "json",
+                                            "hdf5"
+                                        ],
+                                        "description": "File format"
+                                    },
+                                    "params": {
+                                        "type": "object",
+                                        "description": "Additional parameters for file loading"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "if": {
+                                "properties": {
+                                    "type": {
+                                        "const": "transform"
+                                    }
+                                }
+                            },
+                            "then": {
+                                "required": [
+                                    "operation"
+                                ],
+                                "properties": {
+                                    "operation": {
+                                        "type": "string",
+                                        "enum": [
+                                            "mean",
+                                            "sum",
+                                            "std",
+                                            "var",
+                                            "min",
+                                            "max",
+                                            "count",
+                                            "median",
+                                            "normalize",
+                                            "standardize",
+                                            "robust_scale",
+                                            "pivot",
+                                            "unpivot",
+                                            "melt",
+                                            "gene_set_enrichment",
+                                            "scoring",
+                                            "tnse_score",
+                                            "select_columns",
+                                            "drop_columns",
+                                            "rename_columns",
+                                            "add_constant",
+                                            "multiply",
+                                            "divide",
+                                            "add",
+                                            "subtract",
+                                            "log_transform",
+                                            "sqrt_transform",
+                                            "square_transform",
+                                            "clip",
+                                            "replace_values",
+                                            "fill_na"
+                                        ],
+                                        "description": "Transformation operation to perform"
+                                    },
+                                    "params": {
+                                        "type": "object",
+                                        "description": "Parameters for the transformation operation"
+                                    },
+                                    "axis": {
+                                        "type": "integer",
+                                        "description": "Axis for aggregation operations (0 for columns, 1 for rows)"
+                                    },
+                                    "feature_columns": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "Columns to apply transformation to"
+                                    },
+                                    "target_genes": {
+                                        "type": "object",
+                                        "description": "Gene sets for enrichment analysis",
+                                        "patternProperties": {
+                                            "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "markers": {
+                                        "type": "object",
+                                        "description": "Marker genes for scoring",
+                                        "patternProperties": {
+                                            "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "cell_metadata": {
+                                        "type": "object",
+                                        "description": "Cell metadata for tNSE scoring"
+                                    },
+                                    "index": {
+                                        "type": "string",
+                                        "description": "Index column for pivot operations"
+                                    },
+                                    "columns": {
+                                        "oneOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        ],
+                                        "description": "Columns parameter for pivot operations"
+                                    },
+                                    "values": {
+                                        "oneOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        ],
+                                        "description": "Values parameter for pivot operations"
+                                    },
+                                    "id_vars": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "ID variables for melt operations"
+                                    },
+                                    "value_vars": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "Value variables for melt operations"
+                                    },
+                                    "var_name": {
+                                        "type": "string",
+                                        "description": "Variable name for melt operations"
+                                    },
+                                    "value_name": {
+                                        "type": "string",
+                                        "description": "Value name for melt operations"
+                                    },
+                                    "mapping": {
+                                        "type": "object",
+                                        "description": "Mapping for rename or replace operations"
+                                    },
+                                    "value": {
+                                        "type": "number",
+                                        "description": "Constant value for arithmetic operations"
+                                    },
+                                    "values": {
+                                        "type": "object",
+                                        "description": "Values for arithmetic operations per column"
+                                    },
+                                    "base": {
+                                        "type": "number",
+                                        "description": "Base for log transformation"
+                                    },
+                                    "lower": {
+                                        "type": "number",
+                                        "description": "Lower bound for clipping"
+                                    },
+                                    "upper": {
+                                        "type": "number",
+                                        "description": "Upper bound for clipping"
+                                    },
+                                    "method": {
+                                        "type": "string",
+                                        "enum": [
+                                            "forward",
+                                            "backward",
+                                            "value"
+                                        ],
+                                        "description": "Method for filling missing values"
+                                    },
+                                    "index_name": {
+                                        "type": "string",
+                                        "description": "Name for index column"
+                                    },
+                                    "suffix": {
+                                        "type": "string",
+                                        "description": "Suffix for column names"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "if": {
+                                "properties": {
+                                    "type": {
+                                        "const": "aggregate"
+                                    }
+                                }
+                            },
+                            "then": {
+                                "required": [
+                                    "group_by",
+                                    "aggregations"
+                                ],
+                                "properties": {
+                                    "group_by": {
+                                        "oneOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        ],
+                                        "description": "Column(s) to group by"
+                                    },
+                                    "aggregations": {
+                                        "type": "object",
+                                        "description": "Aggregation functions to apply",
+                                        "patternProperties": {
+                                            "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "mean",
+                                                            "sum",
+                                                            "std",
+                                                            "var",
+                                                            "min",
+                                                            "max",
+                                                            "count",
+                                                            "median",
+                                                            "first",
+                                                            "last"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "mean",
+                                                                "sum",
+                                                                "std",
+                                                                "var",
+                                                                "min",
+                                                                "max",
+                                                                "count",
+                                                                "median",
+                                                                "first",
+                                                                "last"
+                                                            ]
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "if": {
+                                "properties": {
+                                    "type": {
+                                        "const": "join"
+                                    }
+                                }
+                            },
+                            "then": {
+                                "required": [
+                                    "left",
+                                    "right",
+                                    "on"
+                                ],
+                                "properties": {
+                                    "left": {
+                                        "type": "string",
+                                        "description": "Left input reference"
+                                    },
+                                    "right": {
+                                        "type": "string",
+                                        "description": "Right input reference"
+                                    },
+                                    "on": {
+                                        "oneOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        ],
+                                        "description": "Column(s) to join on"
+                                    },
+                                    "how": {
+                                        "type": "string",
+                                        "enum": [
+                                            "inner",
+                                            "left",
+                                            "right",
+                                            "outer"
+                                        ],
+                                        "default": "inner",
+                                        "description": "Type of join"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "if": {
+                                "properties": {
+                                    "type": {
+                                        "const": "preprocess"
+                                    }
+                                }
+                            },
+                            "then": {
+                                "required": [
+                                    "method"
+                                ],
+                                "properties": {
+                                    "method": {
+                                        "type": "string",
+                                        "enum": [
+                                            "minmax_scale",
+                                            "standard_scale",
+                                            "robust_scale",
+                                            "pca",
+                                            "select_k_best",
+                                            "select_percentile"
+                                        ],
+                                        "description": "Preprocessing method"
+                                    },
+                                    "feature_columns": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "Columns to apply preprocessing to"
+                                    },
+                                    "scaler_name": {
+                                        "type": "string",
+                                        "description": "Name to store scaler for later use"
+                                    },
+                                    "params": {
+                                        "type": "object",
+                                        "description": "Parameters for the preprocessing method"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "if": {
+                                "properties": {
+                                    "type": {
+                                        "const": "custom"
+                                    }
+                                }
+                            },
+                            "then": {
+                                "required": [
+                                    "function"
+                                ],
+                                "properties": {
+                                    "function": {
+                                        "type": "string",
+                                        "description": "Path to approved function (e.g., 'pandas.DataFrame.head')"
+                                    },
+                                    "params": {
+                                        "type": "object",
+                                        "description": "Parameters to pass to the function"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "metadata": {
+            "type": "object",
+            "description": "Optional metadata about the pipeline",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name of the feature engineering pipeline"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the pipeline"
+                },
+                "version": {
+                    "type": "string",
+                    "description": "Version of the pipeline"
+                },
+                "author": {
+                    "type": "string",
+                    "description": "Author of the pipeline"
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+

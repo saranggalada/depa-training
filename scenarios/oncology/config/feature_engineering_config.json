@@ -1,0 +1,323 @@
+{
+    "metadata": {
+        "name": "Oncology Feature Engineering Pipeline",
+        "description": "Configurable feature engineering for oncology scenario - replaces Python scripts with secure config-based operations",
+        "version": "1.0.0",
+        "author": "DEPA Training Framework"
+    },
+    "pipeline": {
+        "load_expression_data": {
+            "type": "load",
+            "file_path": "/mnt/remote/genomics_lab/preprocessed/sc_expr_matrix.csv",
+            "format": "csv",
+            "params": {
+                "index_col": 0
+            }
+        },
+        "load_drug_response": {
+            "type": "load",
+            "file_path": "/mnt/remote/pharmaceutical_company/preprocessed/drug_response.csv",
+            "format": "csv",
+            "params": {
+                "index_col": 0
+            }
+        },
+        "load_drug_targets": {
+            "type": "load",
+            "file_path": "/mnt/remote/pharmaceutical_company/preprocessed/drug_targets.json",
+            "format": "json"
+        },
+        "load_cell_markers": {
+            "type": "load",
+            "file_path": "/mnt/remote/computational_biology_lab/preprocessed/cell_markers.json",
+            "format": "json"
+        },
+        "load_cell_metadata": {
+            "type": "load",
+            "file_path": "/mnt/remote/cancer_institute/preprocessed/cell_metadata.csv",
+            "format": "csv"
+        },
+        "compute_gene_set_enrichment": {
+            "type": "transform",
+            "inputs": {
+                "expr_data": "load_expression_data",
+                "drug_targets": "load_drug_targets"
+            },
+            "operation": "gene_set_enrichment",
+            "params": {
+                "target_genes": {
+                    "Venetoclax": [
+                        "BCL2"
+                    ],
+                    "Azacitidine": [
+                        "DNMT1",
+                        "IDH2"
+                    ],
+                    "Cytarabine": [
+                        "DNA_POL",
+                        "TOP2A"
+                    ],
+                    "Daunorubicin": [
+                        "TOP2A",
+                        "ABCB1"
+                    ],
+                    "Idarubicin": [
+                        "TOP2A",
+                        "ABCB1"
+                    ],
+                    "Mitoxantrone": [
+                        "TOP2A",
+                        "ABCB1"
+                    ],
+                    "Etoposide": [
+                        "TOP2A",
+                        "ABCB1"
+                    ],
+                    "Fludarabine": [
+                        "DNA_POL",
+                        "RRM1"
+                    ],
+                    "Cladribine": [
+                        "DNA_POL",
+                        "RRM1"
+                    ],
+                    "Clofarabine": [
+                        "DNA_POL",
+                        "RRM1"
+                    ],
+                    "Nelarabine": [
+                        "DNA_POL",
+                        "RRM1"
+                    ],
+                    "Decitabine": [
+                        "DNMT1",
+                        "DNMT3A"
+                    ],
+                    "Vidaza": [
+                        "DNMT1",
+                        "DNMT3A"
+                    ],
+                    "Gemtuzumab": [
+                        "CD33",
+                        "CD123"
+                    ]
+                },
+                "index_name": "cell_id"
+            }
+        },
+        "compute_cell_type_scores": {
+            "type": "transform",
+            "inputs": {
+                "expr_data": "load_expression_data",
+                "cell_markers": "load_cell_markers"
+            },
+            "operation": "scoring",
+            "params": {
+                "markers": {
+                    "AML_blast": [
+                        "CD34",
+                        "CD33",
+                        "CD117",
+                        "CD13",
+                        "CD15"
+                    ],
+                    "Monocyte": [
+                        "CD14",
+                        "CD11b",
+                        "CD68",
+                        "CD163"
+                    ],
+                    "T_cell": [
+                        "CD3",
+                        "CD4",
+                        "CD8",
+                        "CD2"
+                    ],
+                    "B_cell": [
+                        "CD19",
+                        "CD20",
+                        "CD22",
+                        "CD79a"
+                    ],
+                    "NK_cell": [
+                        "CD56",
+                        "CD16",
+                        "CD94"
+                    ],
+                    "Erythroid": [
+                        "CD71",
+                        "CD235a",
+                        "CD36"
+                    ],
+                    "Megakaryocyte": [
+                        "CD41",
+                        "CD42b",
+                        "CD61"
+                    ]
+                },
+                "index_name": "cell_id",
+                "suffix": "_score"
+            }
+        },
+        "prepare_cell_features": {
+            "type": "join",
+            "left": "load_cell_metadata",
+            "right": "compute_gene_set_enrichment",
+            "on": "cell_id",
+            "how": "left"
+        },
+        "add_cell_type_scores": {
+            "type": "join",
+            "left": "prepare_cell_features",
+            "right": "compute_cell_type_scores",
+            "on": "cell_id",
+            "how": "left"
+        },
+        "aggregate_to_patient_level": {
+            "type": "aggregate",
+            "inputs": {
+                "cell_features": "add_cell_type_scores"
+            },
+            "group_by": "patient",
+            "aggregations": {
+                "Venetoclax": "mean",
+                "Azacitidine": "mean",
+                "Cytarabine": "mean",
+                "Daunorubicin": "mean",
+                "Idarubicin": "mean",
+                "Mitoxantrone": "mean",
+                "Etoposide": "mean",
+                "Fludarabine": "mean",
+                "Cladribine": "mean",
+                "Clofarabine": "mean",
+                "Nelarabine": "mean",
+                "Decitabine": "mean",
+                "Vidaza": "mean",
+                "Gemtuzumab": "mean",
+                "AML_blast_score": "mean",
+                "Monocyte_score": "mean",
+                "T_cell_score": "mean",
+                "B_cell_score": "mean",
+                "NK_cell_score": "mean",
+                "Erythroid_score": "mean",
+                "Megakaryocyte_score": "mean"
+            }
+        },
+        "normalize_features": {
+            "type": "preprocess",
+            "inputs": {
+                "patient_features": "aggregate_to_patient_level"
+            },
+            "method": "minmax_scale",
+            "feature_columns": [
+                "Venetoclax",
+                "Azacitidine",
+                "Cytarabine",
+                "Daunorubicin",
+                "Idarubicin",
+                "Mitoxantrone",
+                "Etoposide",
+                "Fludarabine",
+                "Cladribine",
+                "Clofarabine",
+                "Nelarabine",
+                "Decitabine",
+                "Vidaza",
+                "Gemtuzumab",
+                "AML_blast_score",
+                "Monocyte_score",
+                "T_cell_score",
+                "B_cell_score",
+                "NK_cell_score",
+                "Erythroid_score",
+                "Megakaryocyte_score"
+            ],
+            "scaler_name": "feature_scaler"
+        },
+        "align_training_dataset": {
+            "type": "join",
+            "left": "normalize_features",
+            "right": "load_drug_response",
+            "on": "patient_id",
+            "how": "inner"
+        },
+        "create_flattened_dataset": {
+            "type": "transform",
+            "inputs": {
+                "aligned_data": "align_training_dataset"
+            },
+            "operation": "melt",
+            "params": {
+                "id_vars": [
+                    "patient_id",
+                    "Venetoclax",
+                    "Azacitidine",
+                    "Cytarabine",
+                    "Daunorubicin",
+                    "Idarubicin",
+                    "Mitoxantrone",
+                    "Etoposide",
+                    "Fludarabine",
+                    "Cladribine",
+                    "Clofarabine",
+                    "Nelarabine",
+                    "Decitabine",
+                    "Vidaza",
+                    "Gemtuzumab",
+                    "AML_blast_score",
+                    "Monocyte_score",
+                    "T_cell_score",
+                    "B_cell_score",
+                    "NK_cell_score",
+                    "Erythroid_score",
+                    "Megakaryocyte_score"
+                ],
+                "value_vars": [
+                    "Venetoclax",
+                    "Azacitidine",
+                    "Cytarabine",
+                    "Daunorubicin",
+                    "Idarubicin",
+                    "Mitoxantrone",
+                    "Etoposide",
+                    "Fludarabine",
+                    "Cladribine",
+                    "Clofarabine",
+                    "Nelarabine",
+                    "Decitabine",
+                    "Vidaza",
+                    "Gemtuzumab"
+                ],
+                "var_name": "drug",
+                "value_name": "drug_response"
+            }
+        },
+        "final_training_dataset": {
+            "type": "transform",
+            "inputs": {
+                "flattened_data": "create_flattened_dataset"
+            },
+            "operation": "select_columns",
+            "params": {
+                "columns": [
+                    "patient_id",
+                    "drug",
+                    "drug_response",
+                    "AML_blast_score",
+                    "Monocyte_score",
+                    "T_cell_score",
+                    "B_cell_score",
+                    "NK_cell_score",
+                    "Erythroid_score",
+                    "Megakaryocyte_score"
+                ]
+            }
+        }
+    }
+}
+
+
+
+
+
+

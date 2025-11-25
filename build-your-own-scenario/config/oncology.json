@@ -1,5 +1,5 @@
 {
-    "scenario_name": "oncology",
+    "scenario_name": "oncology-1",
     "tdps": [
         {
             "name": "genomics_lab",
@@ -50,6 +50,6 @@
         }
     ],
     "training_framework": "Train_XGB",
-    "join_type": "SparkJoin",
+    "join_type": "FeatureEnggCustom",
     "model_format": "ccr_instantiate"
 }

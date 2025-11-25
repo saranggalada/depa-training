@@ -2,12 +2,12 @@
   "name": "Train_XGB",
   "config": {
     "paths": {
-      "input_dataset_path": "/tmp/oncology_joined.csv",
+      "input_dataset_path": "/tmp/oncology_feat_engg.csv",
       "trained_model_output_path": "/mnt/remote/output"
     },
     "is_private": true,
     "privacy_params": {
-      "epsilon": 1.5,
+      "epsilon": 7.5,
       "delta": null,
       "mechanism": "laplace"
     },
@@ -18,13 +18,13 @@
         "learning_rate": 0.05,
         "l2_regularization": 1.0,
         "min_child_weight": 1.0,
-        "objective": "binary:logistic",
-        "eval_metric": "auc"
+        "objective": "regression",
+        "eval_metric": "rmse"
       }
     },
     "dataset_config": {
       "type": "tabular",
-      "target_variable": "response",
+      "target_variable": "drug_response",
       "preprocessing": {
         "scaler": "standard"
       },
@@ -33,17 +33,15 @@
         "train": 0.8,
         "val": 0.1,
         "test": 0.1,
-        "random_state": 42,
-        "stratify": true
+        "random_state": 42
       },
       "data_type": "numpy"
     },
     "metrics": [
-      "accuracy",
-      "roc_auc",
-      "confusion_matrix",
-      "classification_report"
+      "rmse",
+      "mae",
+      "r2_score"
     ],
-    "task_type": "classification"
+    "task_type": "regression"
   }
 }
