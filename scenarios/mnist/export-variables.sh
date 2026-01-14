@@ -41,7 +41,7 @@ declare -x AZURE_MODEL_CONTAINER_NAME=modelcontainer
 declare -x AZURE_OUTPUT_CONTAINER_NAME=outputcontainer
 
 # For key import:
-declare -x CONTRACT_SERVICE_URL=https://depa-training-contract-service.centralindia.cloudapp.azure.com:8000
+declare -x CONTRACT_SERVICE_URL=https://<your-contract-service-url>:<port>
 declare -x TOOLS_HOME=$REPO_ROOT/external/confidential-sidecar-containers/tools
 
 # Export all variables to make them available to other scripts

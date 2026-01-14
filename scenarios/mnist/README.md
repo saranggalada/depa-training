@@ -258,7 +258,7 @@ Navigate to the [Azure deployment](./deployment/azure/) directory and execute th
 The import-keys script generates and imports encryption keys into Azure Key Vault with a policy based on [policy-in-template.json](./policy/policy-in-template.json). The policy requires that the CCRs run specific containers with a specific configuration which includes the public identity of the contract service. Only CCRs that satisfy this policy will be granted access to the encryption keys. The generated keys are available as files with the extension `.bin`.
 
 ```bash
-export CONTRACT_SERVICE_URL=https://depa-training-contract-service.centralindia.cloudapp.azure.com:8000
+export CONTRACT_SERVICE_URL=https://<your-contract-service-url>:<port>
 export TOOLS_HOME=$REPO_ROOT/external/confidential-sidecar-containers/tools
 
 ./3-import-keys.sh

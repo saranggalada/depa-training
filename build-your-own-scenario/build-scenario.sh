@@ -1604,15 +1604,15 @@ cat >> "$EXPORT_VARIABLES_SH" <<EOF
 # For cloud resource creation:
 declare -x SCENARIO="$SCENARIO_NAME"
 declare -x REPO_ROOT="\$(git rev-parse --show-toplevel)"
-declare -x CONTAINER_REGISTRY=ispirt.azurecr.io
-declare -x AZURE_LOCATION=centralindia
-declare -x AZURE_SUBSCRIPTION_ID=
-declare -x AZURE_RESOURCE_GROUP=
-declare -x AZURE_KEYVAULT_ENDPOINT=
-declare -x AZURE_STORAGE_ACCOUNT_NAME=
+declare -x CONTAINER_REGISTRY=<your-container-registry>.azurecr.io
+declare -x AZURE_LOCATION=<your-azure-location>
+declare -x AZURE_SUBSCRIPTION_ID=<your-subscription-id>
+declare -x AZURE_RESOURCE_GROUP=<your-resource-group-name>
+declare -x AZURE_KEYVAULT_ENDPOINT=<your-key-vault-name>.vault.azure.net
+declare -x AZURE_STORAGE_ACCOUNT_NAME=<your-storage-account-name>
 
 # For key import:
-declare -x CONTRACT_SERVICE_URL=https://depa-training-contract-service.centralindia.cloudapp.azure.com:8000
+declare -x CONTRACT_SERVICE_URL=https://<your-contract-service-url>:<port>
 declare -x TOOLS_HOME=\$REPO_ROOT/external/confidential-sidecar-containers/tools
 
 # Export all variables to make them available to other scripts
