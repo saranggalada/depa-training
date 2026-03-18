@@ -12,5 +12,3 @@ workspace/
 .mypy_cache/
 **/*.cose
 **/*.cbor
-
-llm_finetune.py

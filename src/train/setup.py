@@ -24,10 +24,28 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     packages=find_packages(),
+    package_data={
+        "pytrain": ["llm/schemas/*.json"],
+    },
     entry_points={
         "console_scripts": ["pytrain=pytrain.pipeline_executor:main"],
     },
-    python_requires=">=3.8",
+    python_requires=">=3.10",
     install_requires=[
+        "jsonschema>=4.20",
+        "pyyaml>=6.0",
     ],
+    extras_require={
+        "llm": [
+            "transformers>=4.40",
+            "datasets>=2.18",
+            "peft>=0.10",
+            "trl>=0.8",
+            "accelerate>=0.29",
+            "bitsandbytes>=0.43",
+            "safetensors>=0.4",
+            "mlflow>=2.12",
+            "opacus>=1.5",
+        ],
+    },
 )

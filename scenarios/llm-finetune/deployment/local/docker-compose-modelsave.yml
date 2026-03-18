@@ -1,0 +1,9 @@
+services:
+  model_download:
+    image: llm-finetune-modelsave:latest
+    volumes:
+      - $MODEL_OUTPUT_PATH:/mnt/model
+    environment:
+      - HF_MODEL_ID=${HF_MODEL_ID:-microsoft/phi-2}
+      - HF_TOKEN=${HF_TOKEN:-}
+    command: ["python3", "save_base_model.py", "--model", "${HF_MODEL_ID}", "--output", "/mnt/model/${MODEL_LOCAL_NAME}"]

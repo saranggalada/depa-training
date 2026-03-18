@@ -18,10 +18,26 @@
 import json
 import argparse
 from .task_base import TaskBase
-from .join import *
-from .dl_train import Train_DL
-from .xgb_train import Train_XGB
-# from .llm_finetune import LLM_Finetune
+
+try:
+    from .join import *
+except ImportError:
+    pass
+
+try:
+    from .dl_train import Train_DL
+except ImportError:
+    pass
+
+try:
+    from .xgb_train import Train_XGB
+except ImportError:
+    pass
+
+try:
+    from .llm.llm_finetune import LLM_Finetune
+except ImportError:
+    pass
 
 class PipelineExecutor:
     def __init__(self):
