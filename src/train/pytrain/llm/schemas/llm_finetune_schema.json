@@ -1,0 +1,487 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://depa.world/schemas/llm-finetune/v1",
+  "title": "DEPA LLM Fine-Tuning Configuration",
+  "description": "Schema-validated configuration for LLM fine-tuning inside a Confidential Clean Room. No arbitrary code execution is permitted.",
+  "type": "object",
+  "required": ["base_model", "dataset", "method", "training", "output", "framework"],
+  "additionalProperties": false,
+  "properties": {
+    "base_model": {
+      "type": "object",
+      "required": ["name_or_path"],
+      "additionalProperties": false,
+      "properties": {
+        "name_or_path": {
+          "type": "string",
+          "description": "HuggingFace model ID or local path under /mnt/remote/model/"
+        },
+        "dtype": {
+          "type": "string",
+          "enum": ["bf16", "fp16", "fp32"],
+          "default": "bf16"
+        },
+        "attn_implementation": {
+          "type": "string",
+          "enum": ["eager", "sdpa", "flash_attention_2"],
+          "default": "sdpa"
+        },
+        "max_memory": {
+          "type": "object",
+          "description": "Per-device max memory mapping, e.g. {\"0\": \"40GiB\", \"cpu\": \"64GiB\"}",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "tokenizer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name_or_path": {
+          "type": "string",
+          "description": "Tokenizer ID or path. Defaults to base_model.name_or_path if omitted."
+        },
+        "max_seq_length": {
+          "type": "integer",
+          "minimum": 32,
+          "maximum": 131072,
+          "default": 2048
+        },
+        "padding_side": {
+          "type": "string",
+          "enum": ["left", "right"],
+          "default": "right"
+        },
+        "chat_template": {
+          "type": "string",
+          "enum": [
+            "default", "chatml", "llama3", "phi3", "gemma",
+            "mistral", "zephyr", "alpaca", "vicuna"
+          ],
+          "default": "default",
+          "description": "Named chat template preset. Arbitrary Jinja templates are not permitted."
+        },
+        "add_eos_token": {
+          "type": "boolean",
+          "default": true
+        },
+        "add_bos_token": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "dataset": {
+      "type": "object",
+      "required": ["sources"],
+      "additionalProperties": false,
+      "properties": {
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["path"],
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Path under /mnt/remote/<tdp_name>/ to the data file or directory"
+              },
+              "format": {
+                "type": "string",
+                "enum": ["parquet", "jsonl", "json", "csv", "arrow"],
+                "default": "jsonl"
+              },
+              "split": {
+                "type": "string",
+                "description": "Optional dataset split name, e.g. 'train'"
+              },
+              "columns": {
+                "type": "object",
+                "description": "Column mapping from source columns to standard fields",
+                "additionalProperties": { "type": "string" }
+              }
+            }
+          }
+        },
+        "format": {
+          "type": "string",
+          "enum": ["alpaca", "sharegpt", "completion", "instruction"],
+          "default": "alpaca",
+          "description": "Prompt formatting template to apply"
+        },
+        "field_instruction": {
+          "type": "string",
+          "default": "instruction"
+        },
+        "field_input": {
+          "type": "string",
+          "default": "input"
+        },
+        "field_output": {
+          "type": "string",
+          "default": "output"
+        },
+        "field_system": {
+          "type": "string",
+          "default": "system"
+        },
+        "field_conversations": {
+          "type": "string",
+          "default": "conversations",
+          "description": "Field name for ShareGPT-format conversation lists"
+        },
+        "field_text": {
+          "type": "string",
+          "default": "text",
+          "description": "Field name for completion-format raw text"
+        },
+        "val_split_ratio": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 0.5,
+          "default": 0.05
+        },
+        "shuffle": {
+          "type": "boolean",
+          "default": true
+        },
+        "seed": {
+          "type": "integer",
+          "default": 42
+        },
+        "max_samples": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Optional cap on total samples used for training"
+        }
+      }
+    },
+    "method": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["full", "lora", "qlora"]
+        },
+        "r": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256,
+          "default": 16,
+          "description": "LoRA rank"
+        },
+        "lora_alpha": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 512,
+          "default": 32
+        },
+        "lora_dropout": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "default": 0.05
+        },
+        "target_modules": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "q_proj", "k_proj", "v_proj", "o_proj",
+              "gate_proj", "up_proj", "down_proj",
+              "embed_tokens", "lm_head",
+              "query_key_value", "dense", "dense_h_to_4h", "dense_4h_to_h",
+              "c_attn", "c_proj", "c_fc",
+              "w1", "w2", "w3",
+              "all-linear"
+            ]
+          },
+          "default": ["q_proj", "v_proj"]
+        },
+        "bias": {
+          "type": "string",
+          "enum": ["none", "all", "lora_only"],
+          "default": "none"
+        },
+        "task_type": {
+          "type": "string",
+          "enum": ["CAUSAL_LM", "SEQ_2_SEQ_LM"],
+          "default": "CAUSAL_LM"
+        },
+        "modules_to_save": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["embed_tokens", "lm_head"]
+          },
+          "description": "Modules to fully train alongside LoRA adapters"
+        },
+        "bnb_4bit_quant_type": {
+          "type": "string",
+          "enum": ["nf4", "fp4"],
+          "default": "nf4",
+          "description": "QLoRA quantization type (only used when method.type is qlora)"
+        },
+        "bnb_4bit_compute_dtype": {
+          "type": "string",
+          "enum": ["bf16", "fp16", "fp32"],
+          "default": "bf16",
+          "description": "Compute dtype for QLoRA (only used when method.type is qlora)"
+        }
+      },
+      "if": {
+        "properties": { "type": { "const": "full" } }
+      },
+      "then": {
+        "properties": {
+          "r": false, "lora_alpha": false, "lora_dropout": false,
+          "target_modules": false, "bias": false, "modules_to_save": false,
+          "bnb_4bit_quant_type": false, "bnb_4bit_compute_dtype": false
+        }
+      }
+    },
+    "training": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "epochs": {
+          "type": "number",
+          "minimum": 0.01,
+          "maximum": 100,
+          "default": 3
+        },
+        "max_steps": {
+          "type": "integer",
+          "minimum": -1,
+          "default": -1,
+          "description": "Overrides epochs if set to a positive value"
+        },
+        "per_device_batch_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256,
+          "default": 4
+        },
+        "gradient_accumulation_steps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512,
+          "default": 4
+        },
+        "learning_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 2e-4
+        },
+        "lr_scheduler_type": {
+          "type": "string",
+          "enum": [
+            "linear", "cosine", "cosine_with_restarts",
+            "polynomial", "constant", "constant_with_warmup",
+            "inverse_sqrt", "reduce_lr_on_plateau"
+          ],
+          "default": "cosine"
+        },
+        "warmup_ratio": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "default": 0.03
+        },
+        "warmup_steps": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "Overrides warmup_ratio if set to a positive value"
+        },
+        "weight_decay": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "default": 0.01
+        },
+        "max_grad_norm": {
+          "type": "number",
+          "minimum": 0.0,
+          "default": 1.0
+        },
+        "bf16": {
+          "type": "boolean",
+          "default": true
+        },
+        "fp16": {
+          "type": "boolean",
+          "default": false
+        },
+        "gradient_checkpointing": {
+          "type": "boolean",
+          "default": true
+        },
+        "optim": {
+          "type": "string",
+          "enum": [
+            "adamw_torch", "adamw_hf", "adamw_torch_fused",
+            "adamw_8bit", "paged_adamw_8bit", "paged_adamw_32bit",
+            "sgd", "adafactor", "lion_8bit", "lion_32bit"
+          ],
+          "default": "adamw_torch"
+        },
+        "seed": {
+          "type": "integer",
+          "default": 42
+        },
+        "neftune_noise_alpha": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "default": null,
+          "description": "NEFTune noise injection alpha. null to disable."
+        },
+        "packing": {
+          "type": "boolean",
+          "default": false,
+          "description": "Pack multiple short sequences into a single training sample"
+        }
+      }
+    },
+    "distributed": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "enum": ["none", "deepspeed_zero2", "deepspeed_zero3", "fsdp"],
+          "default": "none"
+        },
+        "num_gpus": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8,
+          "default": 1
+        },
+        "deepspeed_config": {
+          "type": "object",
+          "description": "Optional DeepSpeed overrides (offload, etc.)",
+          "additionalProperties": true
+        }
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional differential privacy via DP-LoRA (Opacus). Requires method.type to be lora or qlora.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "epsilon": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Target epsilon privacy budget"
+        },
+        "delta": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "description": "Target delta. Should be < 1/N where N is dataset size."
+        },
+        "max_grad_norm": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 1.0,
+          "description": "Per-sample gradient clipping norm for DP-SGD"
+        },
+        "max_physical_batch_size": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 4,
+          "description": "Physical batch size for Opacus BatchMemoryManager"
+        }
+      },
+      "if": { "properties": { "enabled": { "const": true } } },
+      "then": { "required": ["epsilon", "delta"] }
+    },
+    "output": {
+      "type": "object",
+      "required": ["path"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "default": "/mnt/remote/output",
+          "description": "Output directory for trained model and artifacts"
+        },
+        "merge_adapter": {
+          "type": "boolean",
+          "default": false,
+          "description": "Merge LoRA adapter weights into base model before saving"
+        },
+        "save_steps": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "Save checkpoint every N steps. 0 to disable intermediate checkpoints."
+        },
+        "save_total_limit": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 2,
+          "description": "Max number of intermediate checkpoints to keep"
+        }
+      }
+    },
+    "framework": {
+      "type": "string",
+      "enum": ["axolotl", "torchtune", "huggingface", "pytorch"],
+      "description": "Fine-tuning framework to use for execution"
+    },
+    "observability": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "log_steps": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 10
+        },
+        "eval_steps": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 50
+        },
+        "eval_strategy": {
+          "type": "string",
+          "enum": ["steps", "epoch", "no"],
+          "default": "steps"
+        },
+        "metrics": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["loss", "eval_loss", "perplexity", "throughput_tokens_per_sec", "learning_rate"]
+          },
+          "default": ["loss", "eval_loss", "perplexity"]
+        },
+        "mlflow": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "experiment_name": {
+              "type": "string",
+              "default": "depa-llm-finetune"
+            }
+          }
+        }
+      }
+    }
+  }
+}

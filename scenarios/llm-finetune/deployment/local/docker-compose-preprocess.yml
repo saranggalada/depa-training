@@ -1,0 +1,25 @@
+services:
+  market_data:
+    image: preprocess-market-data:latest
+    volumes:
+      - $MARKET_DATA_OUTPUT_PATH:/mnt/output
+    environment:
+      - MAX_SAMPLES=${MAX_SAMPLES:-0}
+      - OUTPUT_DIR=/mnt/output
+    command: ["python3", "preprocess_fin_phrasebank.py"]
+  fintech:
+    image: preprocess-fintech:latest
+    volumes:
+      - $FINTECH_OUTPUT_PATH:/mnt/output
+    environment:
+      - MAX_SAMPLES=${MAX_SAMPLES:-0}
+      - OUTPUT_DIR=/mnt/output
+    command: ["python3", "preprocess_fintech.py"]
+  bank:
+    image: preprocess-bank:latest
+    volumes:
+      - $BANK_OUTPUT_PATH:/mnt/output
+    environment:
+      - MAX_SAMPLES=${MAX_SAMPLES:-0}
+      - OUTPUT_DIR=/mnt/output
+    command: ["python3", "preprocess_bank_qna.py"]

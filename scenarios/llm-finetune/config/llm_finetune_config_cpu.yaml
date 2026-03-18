@@ -1,0 +1,102 @@
+# DEPA LLM Fine-Tuning — CPU Sanity Test Config
+#
+# Stripped-down configuration for CPU-only machines.  Uses fp32,
+# tiny batch size, and max_steps=20 so it completes in a few minutes.
+# The resulting model will be garbage — this is purely for testing
+# that the full pipeline (config parsing, data loading, tokenization,
+# training loop, model saving, audit logging) works end-to-end.
+#
+# Uses SmolLM2-135M (~270MB) instead of phi-2 (~5.5GB) for speed.
+
+base_model:
+  name_or_path: /mnt/remote/model/base_llm_hf
+  dtype: fp32
+  attn_implementation: eager
+
+tokenizer:
+  name_or_path: /mnt/remote/model/base_llm_hf
+  max_seq_length: 128
+  padding_side: right
+  chat_template: default
+  add_eos_token: true
+  add_bos_token: true
+
+dataset:
+  sources:
+    - path: /mnt/remote/market_data_provider/financial_phrasebank.jsonl
+      format: jsonl
+      columns:
+        sentence: instruction
+        label: input
+    - path: /mnt/remote/fintech_provider/finance_instruct.jsonl
+      format: jsonl
+      columns:
+        question: instruction
+        answer: output
+    - path: /mnt/remote/bank_provider/compliance_qa.jsonl
+      format: jsonl
+      columns:
+        query: instruction
+        response: output
+  format: alpaca
+  field_instruction: instruction
+  field_input: input
+  field_output: output
+  val_split_ratio: 0.1
+  shuffle: true
+  seed: 42
+  max_samples: 50
+
+method:
+  type: lora
+  r: 4
+  lora_alpha: 8
+  lora_dropout: 0.0
+  target_modules:
+    - q_proj
+    - v_proj
+  bias: none
+  task_type: CAUSAL_LM
+
+training:
+  epochs: 1
+  max_steps: 20
+  per_device_batch_size: 1
+  gradient_accumulation_steps: 1
+  learning_rate: 0.0002
+  lr_scheduler_type: constant
+  warmup_ratio: 0.0
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  bf16: false
+  fp16: false
+  gradient_checkpointing: false
+  optim: adamw_torch
+  seed: 42
+
+distributed:
+  strategy: none
+  num_gpus: 1
+
+privacy:
+  enabled: false
+
+output:
+  path: /mnt/remote/output
+  merge_adapter: false
+  save_steps: 0
+  save_total_limit: 1
+
+framework: huggingface
+
+observability:
+  log_steps: 5
+  eval_steps: 10
+  eval_strategy: steps
+  metrics:
+    - loss
+    - eval_loss
+    - perplexity
+  mlflow:
+    enabled: true
+    experiment_name: depa-llm-finetune-financial-test

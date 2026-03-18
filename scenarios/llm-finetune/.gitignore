@@ -1,0 +1,6 @@
+data/*/
+modeller/models/
+modeller/output/
+config/pipeline_config.json
+*.img
+*.enc

@@ -1,0 +1,106 @@
+# DEPA LLM Fine-Tuning — Financial Sentiment & Advisory
+#
+# Scenario: Three financial data providers (market data, fintech, bank)
+# contribute de-identified datasets to fine-tune a language model for
+# financial question-answering within a Confidential Clean Room.
+#
+# Model:  microsoft/phi-2 (small enough for single-GPU demo)
+# Method: LoRA with optional DP-LoRA
+
+base_model:
+  name_or_path: /mnt/remote/model/phi-2
+  dtype: bf16
+  attn_implementation: sdpa
+
+tokenizer:
+  name_or_path: /mnt/remote/model/phi-2
+  max_seq_length: 2048
+  padding_side: right
+  chat_template: default
+  add_eos_token: true
+  add_bos_token: true
+
+dataset:
+  sources:
+    - path: /mnt/remote/market_data_provider/financial_phrasebank.jsonl
+      format: jsonl
+      columns:
+        sentence: instruction
+        label: input
+    - path: /mnt/remote/fintech_provider/finance_instruct.jsonl
+      format: jsonl
+      columns:
+        question: instruction
+        answer: output
+    - path: /mnt/remote/bank_provider/compliance_qa.jsonl
+      format: jsonl
+      columns:
+        query: instruction
+        response: output
+  format: alpaca
+  field_instruction: instruction
+  field_input: input
+  field_output: output
+  val_split_ratio: 0.05
+  shuffle: true
+  seed: 42
+
+method:
+  type: lora
+  r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+  bias: none
+  task_type: CAUSAL_LM
+
+training:
+  epochs: 3
+  per_device_batch_size: 4
+  gradient_accumulation_steps: 4
+  learning_rate: 0.0002
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.03
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  bf16: true
+  fp16: false
+  gradient_checkpointing: true
+  optim: adamw_torch
+  seed: 42
+
+distributed:
+  strategy: none
+  num_gpus: 1
+
+privacy:
+  enabled: true
+  epsilon: 1.0
+  delta: 0.001
+  max_grad_norm: 1.0
+  max_physical_batch_size: 4
+
+output:
+  path: /mnt/remote/output
+  merge_adapter: false
+  save_steps: 500
+  save_total_limit: 2
+
+framework: huggingface
+
+observability:
+  log_steps: 10
+  eval_steps: 100
+  eval_strategy: steps
+  metrics:
+    - loss
+    - eval_loss
+    - perplexity
+    - learning_rate
+  mlflow:
+    enabled: true
+    experiment_name: depa-financial-finetune

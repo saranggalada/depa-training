@@ -1,0 +1,21 @@
+services:
+  train:
+    image: ${CONTAINER_REGISTRY:+$CONTAINER_REGISTRY/}depa-llm-finetune:latest
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NVIDIA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - $MARKET_DATA_INPUT_PATH:/mnt/remote/market_data_provider
+      - $FINTECH_INPUT_PATH:/mnt/remote/fintech_provider
+      - $BANK_INPUT_PATH:/mnt/remote/bank_provider
+      - $MODEL_INPUT_PATH:/mnt/remote/model
+      - $MODEL_OUTPUT_PATH:/mnt/remote/output
+      - $CONFIGURATION_PATH:/mnt/remote/config
+    command: ["/bin/bash", "run.sh"]

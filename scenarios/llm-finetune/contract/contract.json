@@ -1,0 +1,88 @@
+{
+  "id": "llm-ft-001-2026-03-16",
+  "schemaVersion": "0.1",
+  "startTime": "2026-03-01T00:00:00.000Z",
+  "expiryTime": "2027-03-01T00:00:00.000Z",
+  "tdc": "",
+  "tdps": [],
+  "ccrp": "did:web:$CCRP_USERNAME.github.io",
+  "datasets": [
+    {
+      "id": "ds-market-data-001",
+      "owner": "market_data_provider",
+      "name": "financial_phrasebank",
+      "url": "https://$AZURE_STORAGE_ACCOUNT_NAME.blob.core.windows.net/$AZURE_MARKET_DATA_CONTAINER/data.img",
+      "provider": "Market Data Corp",
+      "key": {
+        "type": "azure",
+        "properties": {
+          "kid": "MarketDataEncryptionKey",
+          "authority": {
+            "endpoint": "sharedneu.neu.attest.azure.net"
+          },
+          "endpoint": ""
+        }
+      }
+    },
+    {
+      "id": "ds-fintech-001",
+      "owner": "fintech_provider",
+      "name": "finance_instruct",
+      "url": "https://$AZURE_STORAGE_ACCOUNT_NAME.blob.core.windows.net/$AZURE_FINTECH_CONTAINER/data.img",
+      "provider": "FinTech Solutions Ltd",
+      "key": {
+        "type": "azure",
+        "properties": {
+          "kid": "FintechEncryptionKey",
+          "authority": {
+            "endpoint": "sharedneu.neu.attest.azure.net"
+          },
+          "endpoint": ""
+        }
+      }
+    },
+    {
+      "id": "ds-bank-001",
+      "owner": "bank_provider",
+      "name": "compliance_qa",
+      "url": "https://$AZURE_STORAGE_ACCOUNT_NAME.blob.core.windows.net/$AZURE_BANK_CONTAINER/data.img",
+      "provider": "National Bank",
+      "key": {
+        "type": "azure",
+        "properties": {
+          "kid": "BankEncryptionKey",
+          "authority": {
+            "endpoint": "sharedneu.neu.attest.azure.net"
+          },
+          "endpoint": ""
+        }
+      }
+    }
+  ],
+  "purpose": "LLM_FINETUNING",
+  "constraints": [
+    {
+      "privacy": [
+        {
+          "dataset": "ds-market-data-001",
+          "epsilon_threshold": "1.5",
+          "delta": "0.001"
+        },
+        {
+          "dataset": "ds-fintech-001",
+          "epsilon_threshold": "1.5",
+          "delta": "0.001"
+        },
+        {
+          "dataset": "ds-bank-001",
+          "epsilon_threshold": "1.5",
+          "delta": "0.001"
+        }
+      ]
+    }
+  ],
+  "terms": {
+    "payment": {},
+    "revocation": {}
+  }
+}
